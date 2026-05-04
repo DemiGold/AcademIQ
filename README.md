@@ -1,16 +1,23 @@
-# React + Vite
+# 🎓 AcademIQ
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AcademIQ is a premium, full-stack Computer-Based Test (CBT) and examination prep platform designed for university students. It features secure passwordless authentication, a custom token-based monetization engine, and a comprehensive admin dashboard for course management.
 
-Currently, two official plugins are available:
+## ✨ Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* **🔐 Magic Link Authentication:** Secure, passwordless login using Supabase Auth.
+* **🪙 Token Engine Monetization:** Custom `ACAD-XXXX-XXXX` token generation system to lock premium content and track paid user access.
+* **📝 Dynamic CBT Engine:** Real-time exam environment with timers, immediate grading, and detailed post-exam explanations.
+* **👨‍💻 Admin Dashboard:** Dedicated admin portal for bulk-uploading questions via CSV, managing student access levels, and generating access tokens.
+* **📱 Fully Responsive UI:** Optimized for both desktop and mobile devices.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Frontend:** React (Vite), CSS3 (Flexbox/Grid layout)
+* **Backend as a Service:** Supabase
+* **Database:** PostgreSQL (with Row-Level Security)
+* **Authentication:** Supabase OTP (One-Time Password) Magic Links
+* **Deployment:** Vercel (Frontend)
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Future Roadmap
+* Paystack API integration for automated token purchasing.
+* Performance analytics and historical score tracking for students.
