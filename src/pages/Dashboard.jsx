@@ -21,15 +21,30 @@ const Dashboard = () => {
 
   const fetchUserData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
+    
     if (user) {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      
+      // PRO TIP: Always log the error so you aren't debugging blind!
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (error) {
+        console.error("Profile Fetch Error:", error.message);
+      }
+
       const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+      
       if (data?.role === 'admin' && !isPreview) {
         navigate('/admin');
         return; 
       }
-      setUserProfile(data);
+      
+      // THE FIX: Merge the auth email into the profile state so the UI can use it
+      if (data) {
+        setUserProfile({ ...data, email: user.email });
+      }
     }
   };
 
