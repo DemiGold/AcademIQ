@@ -321,3 +321,59 @@
     .option-btn { font-size: 13px; }
     .nav-btns { flex-direction: column; }
   }
+
+/* --- MOBILE RESPONSIVENESS FIXES --- */
+@media (max-width: 768px) {
+  /* Let the container breathe on mobile */
+  .container {
+    margin: 60px auto !important;
+    width: 95% !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+  }
+
+  /* Stack the token banner vertically */
+  .token-banner {
+    flex-direction: column !important;
+    text-align: center;
+    padding: 20px !important;
+  }
+
+  /* Make header buttons stack neatly */
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+    margin-top: 15px;
+  }
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- ADMIN PANEL MOBILE FIXES --- */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column !important;
+  }
+  .admin-sidebar {
+    width: 100% !important;
+    padding: 15px !important;
+  }
+  /* Turns the vertical menu into a horizontal scrollable row on phones */
+  .admin-nav-links {
+    flex-direction: row !important;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+  .admin-nav-links button {
+    flex: 0 0 auto; /* Stops buttons from shrinking */
+    padding: 10px 15px !important;
+  }
+  .admin-content {
+    padding: 15px !important;
+    width: 100% !important;
+  }
+}

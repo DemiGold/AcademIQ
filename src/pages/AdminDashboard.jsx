@@ -445,30 +445,36 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f6f8', fontFamily: 'system-ui, sans-serif' }}>
+    <div className="admin-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f4f6f8', fontFamily: 'system-ui, sans-serif' }}>
+      
       {/* SIDEBAR */}
-      <div style={{ width: '250px', background: '#1a5276', color: 'white', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-        <h2 style={{ fontSize: '20px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}><ShieldCheck size={24} /> AcademIQ Admin</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="admin-sidebar" style={{ width: '250px', background: '#1a5276', color: 'white', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+        <h2 style={{ fontSize: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ShieldCheck size={24} /> AcademIQ Admin
+        </h2>
+        
+        <div className="admin-nav-links" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <button onClick={() => setActiveTab('overview')} style={{ background: activeTab === 'overview' ? '#154360' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '10px' }}><LayoutDashboard size={18} /> Overview</button>
           <button onClick={() => setActiveTab('questions')} style={{ background: activeTab === 'questions' ? '#154360' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '10px' }}><FolderTree size={18} /> Question Bank</button>
           <button onClick={() => setActiveTab('courses')} style={{ background: activeTab === 'courses' ? '#154360' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '10px' }}><BookOpen size={18} /> Courses</button>
           <button onClick={() => setActiveTab('tokens')} style={{ background: activeTab === 'tokens' ? '#154360' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '10px' }}><Key size={18} /> Token Engine</button>
           <button onClick={() => setActiveTab('users')} style={{ background: activeTab === 'users' ? '#154360' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '10px' }}><Users size={18} /> Users</button>
         </div>
-        <div style={{ marginTop: 'auto' }}>
+        
+        <div style={{ marginTop: '20px' }}>
           <button onClick={() => navigate('/dashboard?preview=true')} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '12px', width: '100%', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>← View as Student</button>
         </div>
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+      <div className="admin-content" style={{ flex: 1, padding: '40px', overflowX: 'hidden' }}>
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'questions' && renderQuestionBank()}
         {activeTab === 'courses' && renderCourses()}
         {activeTab === 'tokens' && renderTokens()}
         {activeTab === 'users' && renderUsers()}
       </div>
+      
     </div>
   );
 };

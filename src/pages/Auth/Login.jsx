@@ -37,7 +37,7 @@ const Login = () => {
           <form onSubmit={handleLogin}>
             <input 
               type="email" 
-              placeholder="Your student email" 
+              placeholder="Your Email Address" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               style={{ padding: '12px', width: '80%', borderRadius: '8px', marginBottom: '20px', border: '1px solid #ccc' }}

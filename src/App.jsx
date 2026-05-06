@@ -5,6 +5,8 @@ import Dashboard from './pages/Dashboard';
 import Quiz from './pages/Quiz'; // We will build this next
 import './index.css';
 import AdminDashboard from './pages/AdminDashboard';
+import CGPACalculator from './pages/CGPACalculator'; // adjust path if needed
+
 
 function App() {
   return (
@@ -23,7 +25,8 @@ function App() {
           {/* Dynamic route for the CBT exam session */}
           {/* :courseCode allows one component to handle MTH102, GST112, etc. */}
           <Route path="/quiz/:courseCode" element={<Quiz />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/DemiG/Admin" element={<AdminDashboard />} />
+          <Route path="/cgpa" element={<CGPACalculator />} />
         </Routes>
       </div>
     </Router>

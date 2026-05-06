@@ -126,12 +126,12 @@ const Dashboard = () => {
 
   if (loading) return <div className="container"><h2 style={{ textAlign: 'center', color: '#1a5276', marginTop: '40px' }}>Loading Dashboard...</h2></div>;
 
-  return (
+return (
     <div className="container" style={{ maxWidth: '1000px', padding: 'clamp(15px, 4vw, 30px)' }}>
       
-      {/* HEADER */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', gap: '15px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
-        <div>
+      {/* 1. RESPONSIVE HEADER */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
+        <div style={{ flex: '1 1 auto', textAlign: 'left' }}>
           <h1 style={{ margin: 0, fontSize: 'clamp(22px, 5vw, 28px)', color: '#1a5276', display: 'flex', alignItems: 'center', gap: '8px' }}>
             🎓 AcademIQ
           </h1>
@@ -140,54 +140,74 @@ const Dashboard = () => {
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+{/* Added className for mobile stacking */}
+        <div className="header-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+          
           <div style={{ padding: '6px 12px', borderRadius: '20px', background: userProfile?.has_premium_access ? '#d5f5e3' : '#fadbd8', color: userProfile?.has_premium_access ? '#1e8449' : '#c0392b', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
             {userProfile?.has_premium_access ? '🟢 Premium' : '🔴 Locked'}
           </div>
+
+          {/* NEW: THE FREE CGPA BUTTON */}
+          <button 
+            onClick={() => navigate('/cgpa')} 
+            style={{ background: 'linear-gradient(135deg, #2ecc71, #27ae60)', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', boxShadow: '0 2px 6px rgba(46, 204, 113, 0.3)' }}
+          >
+            📊 CGPA Calculator
+          </button>
           
           {userProfile?.role === 'admin' && (
-            <button onClick={() => navigate('/admin')} style={{ background: '#f39c12', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold' }}>
+            <button onClick={() => navigate('/DemiG/Admin')} style={{ background: '#f39c12', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold' }}>
               ⚙️ Admin Panel
             </button>
           )}
-
+          
           <button onClick={handleLogout} style={{ background: '#f4f6f8', border: '1px solid #ccc', color: '#333', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold' }}>
             <LogOut size={14} /> Logout
           </button>
         </div>
       </div>
 
-      {/* FIXED RESPONSIVE TOKEN BANNER */}
+      {/* 2. RESPONSIVE TOKEN BANNER WITH WHATSAPP LINK */}
       {!userProfile?.has_premium_access && (
-        <div style={{ background: 'linear-gradient(to right, #1a5276, #2980b9)', borderRadius: '12px', padding: 'clamp(20px, 4vw, 30px)', color: 'white', marginBottom: '40px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 15px rgba(26, 82, 118, 0.2)' }}>
-          <div style={{ flex: '1 1 250px' }}>
-            <h2 style={{ margin: '0 0 10px 0', fontSize: 'clamp(20px, 4vw, 24px)', display: 'flex', alignItems: 'center', gap: '10px' }}><KeyRound size={24} /> Unlock Full Access</h2>
-            <p style={{ margin: 0, opacity: 0.9, lineHeight: '1.5', fontSize: '14px' }}>You are currently on a free trial. Enter your activation token below to unlock all CBT exams, past questions, and detailed explanations.</p>
-          </div>
+        <div className="token-banner" style={{ background: 'linear-gradient(to right, #1a5276, #2980b9)', borderRadius: '12px', padding: '30px', color: 'white', marginBottom: '40px', display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 15px rgba(26, 82, 118, 0.2)' }}>
           
-          <div style={{ flex: '1 1 300px', background: 'rgba(255,255,255,0.1)', padding: 'clamp(15px, 3vw, 20px)', borderRadius: '8px', width: '100%' }}>
-            
-            {/* Added flexWrap: 'wrap' to the form to stack nicely on mobile */}
+          <div style={{ flex: '1 1 50%' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>🔓 Unlock Full Access</h3>
+            <p className="text-sm" style={{ margin: 0, lineHeight: '1.5', opacity: 0.9 }}>
+              You are currently on a free trial. To unlock all CBT exams, past questions, and detailed explanations, please{' '}
+              <a 
+                href="https://wa.me/2347078652616" /* <-- PUT YOUR WHATSAPP NUMBER HERE */
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: '#f39c12', fontWeight: 'bold', textDecoration: 'underline' }}
+              >
+                reach out on WhatsApp
+              </a>
+              {' '}to get your activation token.
+            </p>
+          </div>
+
+          <div style={{ flex: '1 1 50%', background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '8px', width: '100%' }}>
             <form onSubmit={handleTokenActivation} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input 
-                type="text" 
-                placeholder="ACAD-XXXX-XXXX" 
+              <input
+                type="text"
+                placeholder="ACAD-XXXX-XXXX"
                 value={tokenInput}
                 onChange={(e) => setTokenInput(e.target.value.toUpperCase())}
                 style={{ flex: '1 1 180px', padding: '12px', borderRadius: '6px', border: 'none', outline: 'none', fontSize: '16px', textTransform: 'uppercase', fontFamily: 'monospace' }}
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isActivating || !tokenInput.trim()}
                 style={{ flex: '1 1 100px', background: '#2ecc71', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: isActivating || !tokenInput.trim() ? 'not-allowed' : 'pointer', opacity: isActivating || !tokenInput.trim() ? 0.7 : 1 }}
               >
-                {isActivating ? 'Checking...' : 'Activate'}
+                {isActivating ? '...' : 'Activate'}
               </button>
             </form>
-            
+
             {activationMessage.text && (
-              <div style={{ marginTop: '12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px', color: activationMessage.type === 'error' ? '#ffb8b8' : '#55efc4' }}>
-                {activationMessage.type === 'error' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />} 
+              <div style={{ marginTop: '12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px', color: activationMessage.type === 'error' ? '#ffb8b8' : '#55efc4', justifyContent: 'center' }}>
+                {activationMessage.type === 'error' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
                 {activationMessage.text}
               </div>
             )}
@@ -195,7 +215,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* COURSE GRID */}
+      {/* COURSE GRID*/}
       <div style={{ marginBottom: '20px' }}>
         <h2 style={{ color: '#2c3e50', fontSize: 'clamp(18px, 4vw, 22px)', margin: '0 0 5px 0' }}>Available CBT Exams</h2>
         <p style={{ color: '#7f8c8d', margin: 0, fontSize: '14px' }}>Select a course to configure your session.</p>
