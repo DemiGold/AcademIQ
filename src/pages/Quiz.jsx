@@ -154,8 +154,8 @@ const Quiz = () => {
     );
   }
 
-  // ==========================================
-  // PHASE 2: RESULT SCREEN
+// ==========================================
+  // PHASE 2: RESULT SCREEN (UPGRADED UI)
   // ==========================================
   if (quizPhase === 'result') {
     let correct = 0;
@@ -163,64 +163,97 @@ const Quiz = () => {
     const wrong = questions.length - correct;
     const pct = Math.round((correct / questions.length) * 100);
 
-    let grade, bg;
-    if (pct >= 70) { grade = 'A — Excellent!'; bg = 'linear-gradient(135deg, #1e8449, #27ae60)'; }
-    else if (pct >= 60) { grade = 'B — Good'; bg = 'linear-gradient(135deg, #1a5276, #2e86c1)'; }
-    else if (pct >= 50) { grade = 'C — Average'; bg = 'linear-gradient(135deg, #b7950b, #f39c12)'; }
-    else if (pct >= 45) { grade = 'D — Pass'; bg = 'linear-gradient(135deg, #ca6f1e, #e67e22)'; }
-    else { grade = 'F — Fail — Keep Studying!'; bg = 'linear-gradient(135deg, #922b21, #e74c3c)'; }
+    // Enhanced grade logic with dynamic shadow glow
+    let grade, bg, shadowColor;
+    if (pct >= 70) { grade = 'A — Excellent!'; bg = 'linear-gradient(135deg, #1e8449, #27ae60)'; shadowColor = 'rgba(46, 204, 113, 0.4)'; }
+    else if (pct >= 60) { grade = 'B — Good'; bg = 'linear-gradient(135deg, #1a5276, #2e86c1)'; shadowColor = 'rgba(52, 152, 219, 0.4)'; }
+    else if (pct >= 50) { grade = 'C — Average'; bg = 'linear-gradient(135deg, #b7950b, #f39c12)'; shadowColor = 'rgba(241, 196, 15, 0.4)'; }
+    else if (pct >= 45) { grade = 'D — Pass'; bg = 'linear-gradient(135deg, #ca6f1e, #e67e22)'; shadowColor = 'rgba(230, 126, 34, 0.4)'; }
+    else { grade = 'F — Fail — Keep Studying!'; bg = 'linear-gradient(135deg, #922b21, #e74c3c)'; shadowColor = 'rgba(231, 76, 60, 0.4)'; }
 
     return (
       <div className="container" style={{ maxWidth: '800px', padding: '20px' }}>
-        <div style={{ background: 'white', padding: '40px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ color: '#2c3e50', margin: '0 0 20px 0' }}>🎓 Exam Completed!</h2>
+        <div style={{ background: 'white', padding: '50px 30px', borderRadius: '16px', textAlign: 'center', boxShadow: `0 15px 35px ${shadowColor}` }}>
           
-          <div style={{ width: '150px', height: '150px', borderRadius: '50%', background: bg, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', fontWeight: '900', margin: '0 auto 20px' }}>
-            {pct}%
+          <h2 style={{ color: '#2c3e50', margin: '0 0 30px 0', fontSize: '28px', fontWeight: '800' }}>🎓 Exam Completed!</h2>
+          
+          {/* Glowing Score Circle */}
+          <div style={{ 
+            width: '180px', height: '180px', borderRadius: '50%', background: bg, color: 'white', 
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+            margin: '0 auto 25px', boxShadow: `0 10px 25px ${shadowColor}`, border: '6px solid white' 
+          }}>
+            <span style={{ fontSize: '56px', fontWeight: '900', lineHeight: '1' }}>{pct}%</span>
+            <span style={{ fontSize: '14px', opacity: 0.9, marginTop: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Score</span>
           </div>
-          
-          <div style={{ display: 'inline-block', padding: '8px 24px', background: bg, color: 'white', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', marginBottom: '30px' }}>
+
+          <div style={{ display: 'inline-block', padding: '10px 30px', background: bg, color: 'white', borderRadius: '30px', fontWeight: 'bold', fontSize: '20px', marginBottom: '40px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
             {grade}
           </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '40px' }}>
-            <div style={{ background: '#f8f9fa', padding: '15px 25px', borderRadius: '8px', borderBottom: '4px solid #2ecc71' }}><div style={{ color: '#7f8c8d', fontSize: '14px' }}>Correct</div><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2c3e50' }}>{correct}</div></div>
-            <div style={{ background: '#f8f9fa', padding: '15px 25px', borderRadius: '8px', borderBottom: '4px solid #e74c3c' }}><div style={{ color: '#7f8c8d', fontSize: '14px' }}>Wrong</div><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2c3e50' }}>{wrong}</div></div>
-            <div style={{ background: '#f8f9fa', padding: '15px 25px', borderRadius: '8px', borderBottom: '4px solid #3498db' }}><div style={{ color: '#7f8c8d', fontSize: '14px' }}>Total</div><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2c3e50' }}>{questions.length}</div></div>
+
+          {/* Clean Stat Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+            <div style={{ background: '#f0fbf4', padding: '20px', borderRadius: '12px', border: '1px solid #c8e6c9' }}>
+              <div style={{ color: '#2e7d32', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>Correct</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: '#1b5e20' }}>{correct}</div>
+            </div>
+            <div style={{ background: '#fdf2f2', padding: '20px', borderRadius: '12px', border: '1px solid #ffcdd2' }}>
+              <div style={{ color: '#c62828', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>Wrong</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: '#b71c1c' }}>{wrong}</div>
+            </div>
+            <div style={{ background: '#f4f6f8', padding: '20px', borderRadius: '12px', border: '1px solid #e0e0e0' }}>
+              <div style={{ color: '#455a64', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>Total Qs</div>
+              <div style={{ fontSize: '32px', fontWeight: '900', color: '#263238' }}>{questions.length}</div>
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-            <button onClick={() => navigate('/dashboard')} style={{ padding: '12px 24px', background: '#f8f9fa', border: '1px solid #ddd', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50' }}>🏠 Dashboard</button>
-            <button onClick={() => setShowReview(!showReview)} style={{ padding: '12px 24px', background: '#1a5276', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>📋 Review Answers</button>
+            <button onClick={() => navigate('/dashboard')} style={{ padding: '14px 28px', background: '#f8f9fa', border: '2px solid #e0e0e0', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50', fontSize: '16px', transition: 'all 0.2s' }}>🏠 Dashboard</button>
+            <button onClick={() => setShowReview(!showReview)} style={{ padding: '14px 28px', background: '#1a5276', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', boxShadow: '0 4px 15px rgba(26,82,118,0.3)', transition: 'all 0.2s' }}>📋 {showReview ? 'Hide Review' : 'Review Answers'}</button>
           </div>
 
+          {/* Upgraded Review Section */}
           {showReview && (
-            <div style={{ marginTop: '40px', textAlign: 'left', borderTop: '2px solid #eee', paddingTop: '30px' }}>
-              <h3 style={{ color: '#1a5276', marginBottom: '20px' }}>📋 Detailed Review & Explanations</h3>
+            <div style={{ marginTop: '50px', textAlign: 'left', animation: 'fadeIn 0.5s ease-in-out' }}>
+              <h3 style={{ color: '#1a5276', marginBottom: '25px', fontSize: '22px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Detailed Review & Explanations</h3>
               
               {questions.map((q, i) => {
                 const isCorrect = userAnswers[i] === q.correct_index;
                 return (
-                  <div key={i} style={{ background: isCorrect ? '#f0fbf4' : '#fdf2f2', padding: '20px', borderRadius: '8px', marginBottom: '20px', borderLeft: isCorrect ? '5px solid #2ecc71' : '5px solid #e74c3c' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#2c3e50', marginBottom: '15px' }}>{i + 1}. {q.question_text}</div>
-                    
-                    <div style={{ fontSize: '15px', marginBottom: '8px' }}>
-                      Your answer: <span style={{ color: isCorrect ? '#27ae60' : '#c0392b', fontWeight: 'bold' }}>
-                        {userAnswers[i] !== undefined ? `${labels[userAnswers[i]]}. ${q.options[userAnswers[i]]}` : 'Not answered'}
-                      </span>
+                  <div key={i} style={{ 
+                    background: 'white', 
+                    padding: '25px', 
+                    borderRadius: '12px', 
+                    marginBottom: '25px', 
+                    border: '1px solid #eee',
+                    borderLeft: isCorrect ? '6px solid #2ecc71' : '6px solid #e74c3c',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ fontWeight: '800', fontSize: '17px', color: '#2c3e50', marginBottom: '20px', lineHeight: '1.5' }}>
+                      <span style={{ color: isCorrect ? '#27ae60' : '#c0392b', marginRight: '8px' }}>Q{i + 1}.</span> 
+                      {q.question_text}
                     </div>
                     
-                    {!isCorrect && (
-                      <div style={{ fontSize: '15px', marginBottom: '8px' }}>
-                        Correct answer: <span style={{ color: '#27ae60', fontWeight: 'bold' }}>{labels[q.correct_index]}. {q.options[q.correct_index]}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
+                      <div style={{ fontSize: '15px', padding: '10px 15px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #eee' }}>
+                        <span style={{ color: '#7f8c8d', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your Answer:</span><br/>
+                        <span style={{ color: isCorrect ? '#27ae60' : '#c0392b', fontWeight: 'bold', fontSize: '16px' }}>
+                          {userAnswers[i] !== undefined ? `${labels[userAnswers[i]]}. ${q.options[userAnswers[i]]}` : 'Not answered'}
+                        </span>
                       </div>
-                    )}
 
-                    {/* NEW: THE EXPLANATION DISPLAY */}
+                      {!isCorrect && (
+                        <div style={{ fontSize: '15px', padding: '10px 15px', background: '#f0fbf4', borderRadius: '8px', border: '1px solid #c8e6c9' }}>
+                          <span style={{ color: '#2e7d32', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Correct Answer:</span><br/>
+                          <span style={{ color: '#27ae60', fontWeight: 'bold', fontSize: '16px' }}>{labels[q.correct_index]}. {q.options[q.correct_index]}</span>
+                        </div>
+                      )}
+                    </div>
+
                     {q.explanation && (
-                      <div style={{ marginTop: '15px', padding: '15px', background: 'white', borderRadius: '6px', border: '1px solid #eee', fontSize: '14px', color: '#555', display: 'flex', gap: '10px' }}>
-                        <span style={{ fontSize: '18px' }}>💡</span> 
-                        <div><strong>Explanation:</strong> {q.explanation}</div>
+                      <div style={{ marginTop: '20px', padding: '18px', background: '#fcf8e3', borderRadius: '8px', border: '1px solid #faebcc', color: '#8a6d3b', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '20px' }}>💡</span>
+                        <div style={{ fontSize: '15px', lineHeight: '1.6' }}><strong>Explanation:</strong> {q.explanation}</div>
                       </div>
                     )}
                   </div>
@@ -232,7 +265,6 @@ const Quiz = () => {
       </div>
     );
   }
-
   // ==========================================
   // PHASE 3: ACTIVE EXAM SCREEN
   // ==========================================
