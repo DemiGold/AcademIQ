@@ -12,17 +12,12 @@ import {
 } from "./features/auth";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import CourseDetailPage from "./features/courses/CourseDetailPage";
+import CoursesListPage from "./features/courses/CoursesListPage";
 import QuizPage from "./features/quiz/QuizPage";
 import ResultPage from "./features/quiz/ResultPage";
 import CGPACalculatorPage from "./features/cgpa/CGPACalculatorPage";
 import ProfilePage from "./features/profile/ProfilePage";
-
-const Stub = ({ name }: { name: string }) => (
-  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-    <h1 className="text-2xl font-bold text-text-primary mb-2">{name}</h1>
-    <p className="text-text-secondary">Coming in a later chunk.</p>
-  </div>
-);
+import LandingPage from "./features/landing/LandingPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +62,7 @@ export default function App() {
         <Routes>
           {/* Public routes — no auth */}
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<Stub name="Landing" />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -77,7 +72,7 @@ export default function App() {
           {/* Student routes — auth required, tab bar */}
           <Route element={<StudentLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/courses" element={<Stub name="Courses" />} />
+            <Route path="/courses" element={<CoursesListPage />} />
             <Route path="/courses/:code" element={<CourseDetailPage />} />
             <Route path="/cgpa" element={<CGPACalculatorPage />} />
             <Route path="/profile" element={<ProfilePage />} />
