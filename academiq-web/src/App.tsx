@@ -10,6 +10,7 @@ import {
   ForgotPasswordPage,
   ResetPasswordPage,
 } from "./features/auth";
+import DashboardPage from "./features/dashboard/DashboardPage";
 
 const Stub = ({ name }: { name: string }) => (
   <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
@@ -49,7 +50,7 @@ export default function App() {
 
           {/* Student routes — auth required */}
           <Route element={<StudentLayout />}>
-            <Route path="/dashboard" element={<Stub name="Dashboard" />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/courses" element={<Stub name="Courses" />} />
             <Route path="/courses/:code" element={<Stub name="Course Detail" />} />
             <Route path="/quiz/:code" element={<Stub name="Quiz" />} />
