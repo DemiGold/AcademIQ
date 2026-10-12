@@ -230,7 +230,7 @@ export interface CourseRow {
   code: string;
   name: string;
   is_active: boolean;
-  target_faculty: string | null;
+  target_faculties: string[];
   created_at: string;
   question_count?: number;
 }
@@ -238,7 +238,7 @@ export interface CourseRow {
 export async function fetchAllCourses(): Promise<CourseRow[]> {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, code, name, is_active, target_faculty, created_at")
+    .select("id, code, name, is_active, target_faculties, created_at")
     .order("code");
   if (error) throw new Error(error.message);
   return data as CourseRow[];
@@ -247,7 +247,7 @@ export async function fetchAllCourses(): Promise<CourseRow[]> {
 export async function createCourse(
   code: string,
   name: string,
-  target_faculty: string | null = null
+  target_faculties: string[] = []
 ): Promise<void> {
   const { error } = await supabase
     .from("courses")
@@ -255,7 +255,7 @@ export async function createCourse(
       {
         code: code.trim().toUpperCase(),
         name: name.trim(),
-        target_faculty,
+        target_faculties,
       },
     ]);
   if (error) throw new Error(error.message);
@@ -263,17 +263,17 @@ export async function createCourse(
 
 export async function updateCourse(
   id: string,
-  patch: { code?: string; name?: string; target_faculty?: string | null }
+  patch: { code?: string; name?: string; target_faculties?: string[] }
 ): Promise<void> {
   const normalized: {
     code?: string;
     name?: string;
-    target_faculty?: string | null;
+    target_faculties?: string[];
   } = {};
   if (patch.code !== undefined) normalized.code = patch.code.trim().toUpperCase();
   if (patch.name !== undefined) normalized.name = patch.name.trim();
-  if (patch.target_faculty !== undefined)
-    normalized.target_faculty = patch.target_faculty;
+  if (patch.target_faculties !== undefined)
+    normalized.target_faculties = patch.target_faculties;
   const { error } = await supabase.from("courses").update(normalized).eq("id", id);
   if (error) throw new Error(error.message);
 }

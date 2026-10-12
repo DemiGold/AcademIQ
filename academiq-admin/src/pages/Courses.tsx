@@ -21,12 +21,18 @@ import {
 import CourseFormModal from "../features/courses/CourseFormModal";
 import TopicManagerModal from "../features/courses/TopicManagerModal";
 
+const FACULTIES = ["Science", "Management Sciences", "Engineering"] as const;
+const FACULTY_ABBR: Record<string, string> = {
+  Science: "SCI",
+  "Management Sciences": "MS",
+  Engineering: "ENGR",
+};
+
 export default function Courses() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "hidden">("all");
 
-  // Modal state
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CourseRow | null>(null);
   const [topicsFor, setTopicsFor] = useState<CourseRow | null>(null);
@@ -114,7 +120,6 @@ export default function Courses() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-text-primary">Courses</h2>
@@ -130,7 +135,6 @@ export default function Courses() {
         </button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MiniStat icon={BookOpen} label="Total Courses" value={courses.length} tone="brand" />
         <MiniStat
@@ -148,7 +152,6 @@ export default function Courses() {
         <MiniStat icon={FileText} label="Total Questions" value={totalQuestions} tone="accent" />
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-xl border border-bg-border p-3 flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[240px]">
           <Search
@@ -181,7 +184,6 @@ export default function Courses() {
         </div>
       </div>
 
-      {/* List */}
       {coursesQuery.isLoading ? (
         <div className="bg-white rounded-xl border border-bg-border p-16 text-center text-text-muted text-sm">
           Loading…
@@ -204,6 +206,9 @@ export default function Courses() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((course) => {
             const qCount = counts[course.id] ?? 0;
+            const targets = course.target_faculties ?? [];
+            const isUniversal =
+              targets.length === 0 || targets.length === FACULTIES.length;
             return (
               <div
                 key={course.id}
@@ -226,15 +231,13 @@ export default function Courses() {
                           Hidden
                         </span>
                       )}
-                      {course.target_faculty ? (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">
-                          {course.target_faculty === "Management Sciences"
-                            ? "MS"
-                            : course.target_faculty}
-                        </span>
-                      ) : (
+                      {isUniversal ? (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold uppercase">
                           All
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">
+                          {targets.map((f) => FACULTY_ABBR[f] ?? f).join(" + ")}
                         </span>
                       )}
                     </div>
@@ -259,7 +262,6 @@ export default function Courses() {
                   </span>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setTopicsFor(course)}
@@ -310,7 +312,6 @@ export default function Courses() {
         </div>
       )}
 
-      {/* Modals */}
       <CourseFormModal
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -326,8 +327,6 @@ export default function Courses() {
     </div>
   );
 }
-
-/* --- Small helpers --- */
 
 function MiniStat({
   icon: Icon,

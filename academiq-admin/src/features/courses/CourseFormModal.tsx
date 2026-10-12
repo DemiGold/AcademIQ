@@ -22,7 +22,7 @@ const FACULTIES = [
 export default function CourseFormModal({ open, onClose, onSaved, editing }: Props) {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [targetFaculty, setTargetFaculty] = useState<string | null>(null);
+  const [targetFaculties, setTargetFaculties] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,16 +31,24 @@ export default function CourseFormModal({ open, onClose, onSaved, editing }: Pro
     if (editing) {
       setCode(editing.code);
       setName(editing.name);
-      setTargetFaculty(editing.target_faculty ?? null);
+      setTargetFaculties(editing.target_faculties ?? []);
     } else {
       setCode("");
       setName("");
-      setTargetFaculty(null);
+      setTargetFaculties([]);
     }
     setError(null);
   }, [open, editing]);
 
   if (!open) return null;
+
+  const toggleFaculty = (f: string) => {
+    setTargetFaculties((prev) =>
+      prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]
+    );
+  };
+
+  const isUniversal = targetFaculties.length === 0;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,10 +68,10 @@ export default function CourseFormModal({ open, onClose, onSaved, editing }: Pro
         await updateCourse(editing.id, {
           code: cleanCode,
           name: cleanName,
-          target_faculty: targetFaculty,
+          target_faculties: targetFaculties,
         });
       } else {
-        await createCourse(cleanCode, cleanName, targetFaculty);
+        await createCourse(cleanCode, cleanName, targetFaculties);
       }
       onSaved();
       onClose();
@@ -139,36 +147,36 @@ export default function CourseFormModal({ open, onClose, onSaved, editing }: Pro
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-2">
-              Target Audience
-            </label>
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-bg-border hover:border-brand-primary/30 cursor-pointer transition">
-                <input
-                  type="radio"
-                  name="target"
-                  checked={targetFaculty === null}
-                  onChange={() => setTargetFaculty(null)}
-                  className="w-4 h-4 accent-brand-primary"
-                />
-                <span className="text-sm text-text-primary">Universal (all students)</span>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-text-secondary">
+                Target Audience
               </label>
+              {isUniversal && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                  Universal
+                </span>
+              )}
+            </div>
+            <div className="space-y-1.5">
               {FACULTIES.map((f) => (
                 <label
                   key={f}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-bg-border hover:border-brand-primary/30 cursor-pointer transition"
                 >
                   <input
-                    type="radio"
-                    name="target"
-                    checked={targetFaculty === f}
-                    onChange={() => setTargetFaculty(f)}
+                    type="checkbox"
+                    checked={targetFaculties.includes(f)}
+                    onChange={() => toggleFaculty(f)}
                     className="w-4 h-4 accent-brand-primary"
                   />
                   <span className="text-sm text-text-primary">Faculty of {f}</span>
                 </label>
               ))}
             </div>
+            <p className="text-[11px] text-text-muted mt-2">
+              Leave all unchecked to make the course visible to every student.
+              Check two or more to share the course across faculties.
+            </p>
           </div>
 
           {error && (
