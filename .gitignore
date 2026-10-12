@@ -64,3 +64,5 @@ AcademIQ-backup-*
 # Misc
 combined_codebase.txt
 extract_code.sh
+academiq-admin-codebase.txt
+extract-code.sh

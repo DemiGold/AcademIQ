@@ -1,4 +1,5 @@
 import { useState, useRef, type FormEvent } from "react";
+import Papa from "papaparse";
 import { X, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "../../services/supabase";
 import type { TopicOption } from "../../services/adminService";
@@ -31,12 +32,14 @@ interface Props {
 
 const REQUIRED_COLUMNS = [
   "question_text",
-  "optA",
-  "optB",
-  "optC",
-  "optD",
+  "opta",
+  "optb",
+  "optc",
+  "optd",
   "correct_index",
 ];
+
+const BATCH_SIZE = 200;
 
 const SAMPLE_CSV = `question_text,optA,optB,optC,optD,correct_index,explanation,academic_session,semester,institution,is_free,status,topic_name
 "What is the capital of Nigeria?","Lagos","Abuja","Kano","Ibadan",1,"Abuja became the capital in 1991.","2022/2023","2nd","UNILAG",true,"published","Integration"
@@ -55,6 +58,7 @@ export default function BulkUploadModal({
   const [fileError, setFileError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string>("");
 
   if (!open) return null;
 
@@ -62,6 +66,7 @@ export default function BulkUploadModal({
     setRows([]);
     setFileError(null);
     setSaveError(null);
+    setProgress("");
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -70,65 +75,70 @@ export default function BulkUploadModal({
     onClose();
   };
 
-  const parseCsvLine = (line: string): string[] => {
-    const result: string[] = [];
-    let current = "";
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (ch === "," && !inQuotes) {
-        result.push(current);
-        current = "";
-      } else {
-        current += ch;
-      }
-    }
-    result.push(current);
-    return result.map((s) => s.trim());
-  };
-
   const handleFile = async (file: File) => {
     setFileError(null);
     setRows([]);
 
     const text = await file.text();
-    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-    if (lines.length < 2) {
-      setFileError("File must have a header row and at least one data row.");
+
+    // Papa Parse: handles quoted newlines, BOM, and other CSV edge cases
+    const parsed = Papa.parse<Record<string, string>>(text, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim().toLowerCase().replace(/^\ufeff/, ""),
+    });
+
+    const realErrors = parsed.errors.filter(
+      (e) => e.code !== "TooFewFields" && e.code !== "TooManyFields"
+    );
+    if (realErrors.length > 0) {
+      setFileError(`Parse error: ${realErrors[0].message}`);
       return;
     }
 
-    const header = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
-    const missing = REQUIRED_COLUMNS.filter((c) => !header.includes(c));
+    const headers = (parsed.meta.fields ?? []).map((h) => h.toLowerCase());
+    const missing = REQUIRED_COLUMNS.filter((c) => !headers.includes(c));
     if (missing.length) {
       setFileError(`Missing required columns: ${missing.join(", ")}`);
       return;
     }
 
-    const idx = (col: string) => header.indexOf(col);
+    const dataRows = parsed.data.filter(
+      (r) => Object.keys(r).length > 0 && Object.values(r).some((v) => (v ?? "").trim())
+    );
+    if (dataRows.length === 0) {
+      setFileError("No data rows found.");
+      return;
+    }
 
-    const parsed: ParsedRow[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const cells = parseCsvLine(lines[i]);
-      const get = (col: string) => {
-        const j = idx(col);
-        return j >= 0 ? (cells[j] ?? "").trim() : "";
-      };
+    // Fetch existing question texts for duplicate check
+    let existingTexts = new Set<string>();
+    try {
+      const { data: existing } = await supabase
+        .from("questions")
+        .select("question_text")
+        .eq("course_id", courseId);
+      existingTexts = new Set(
+        (existing ?? []).map((q) =>
+          ((q as { question_text: string }).question_text ?? "").trim().toLowerCase()
+        )
+      );
+    } catch {
+      // Non-fatal — continue without duplicate detection
+    }
+
+    const seenInFile = new Set<string>();
+    const parsedRows: ParsedRow[] = [];
+
+    for (const row of dataRows) {
+      const get = (col: string) => (row[col] ?? "").trim();
 
       const question_text = get("question_text");
-      const optA = get("optA");
-      const optB = get("optB");
-      const optC = get("optC");
-      const optD = get("optD");
-      const ciRaw = get("correct_index");
-      const ci = parseInt(ciRaw, 10);
+      const optA = get("opta");
+      const optB = get("optb");
+      const optC = get("optc");
+      const optD = get("optd");
+      const ci = parseInt(get("correct_index"), 10);
 
       const rowErrors: string[] = [];
       if (!question_text) rowErrors.push("empty question");
@@ -146,12 +156,20 @@ export default function BulkUploadModal({
       const matchedTopic = topicName
         ? topics.find((t) => t.name.toLowerCase() === topicName.toLowerCase())
         : null;
-
       if (topicName && !matchedTopic) {
         rowErrors.push(`topic "${topicName}" not found`);
       }
 
-      parsed.push({
+      const key = question_text.toLowerCase();
+      if (question_text && existingTexts.has(key)) {
+        rowErrors.push("already exists in this course");
+      } else if (question_text && seenInFile.has(key)) {
+        rowErrors.push("duplicate row in file");
+      } else if (question_text) {
+        seenInFile.add(key);
+      }
+
+      parsedRows.push({
         question_text,
         optA,
         optB,
@@ -170,7 +188,7 @@ export default function BulkUploadModal({
       });
     }
 
-    setRows(parsed);
+    setRows(parsedRows);
   };
 
   const validRows = rows.filter((r) => r.errors.length === 0);
@@ -182,6 +200,7 @@ export default function BulkUploadModal({
 
     setSaving(true);
     setSaveError(null);
+    setProgress("");
 
     const payload = validRows.map((r) => ({
       course_id: courseId,
@@ -197,15 +216,24 @@ export default function BulkUploadModal({
       status: r.status,
     }));
 
+    let inserted = 0;
     try {
-      const { error } = await supabase.from("questions").insert(payload);
-      if (error) throw new Error(error.message);
+      for (let i = 0; i < payload.length; i += BATCH_SIZE) {
+        const batch = payload.slice(i, i + BATCH_SIZE);
+        setProgress(`Uploading ${inserted + 1}–${inserted + batch.length} of ${payload.length}…`);
+        const { error } = await supabase.from("questions").insert(batch);
+        if (error) throw new Error(error.message);
+        inserted += batch.length;
+      }
       onSaved();
       handleClose();
     } catch (err) {
-      setSaveError((err as Error).message);
+      setSaveError(
+        `Inserted ${inserted} of ${payload.length}. Error: ${(err as Error).message}`
+      );
     } finally {
       setSaving(false);
+      setProgress("");
     }
   };
 
@@ -347,10 +375,14 @@ export default function BulkUploadModal({
 
               {invalidRows.length > 0 && (
                 <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                  Rows with issues will be skipped. Fix them in the CSV and re-upload for a clean import.
+                  Rows with issues will be skipped. Fix them in the CSV and re-upload.
                 </div>
               )}
             </div>
+          )}
+
+          {progress && (
+            <div className="text-xs text-brand-primary font-semibold">{progress}</div>
           )}
 
           {saveError && (

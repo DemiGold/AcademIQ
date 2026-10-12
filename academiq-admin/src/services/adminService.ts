@@ -188,7 +188,15 @@ export async function fetchQuestions(
 
 export async function deleteQuestion(id: string): Promise<void> {
   const { error } = await supabase.from("questions").delete().eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) {
+    // Postgres FK violation — question has been answered by students
+    if (error.code === "23503") {
+      throw new Error(
+        "This question has already been answered by students and can't be deleted. Set it to 'Draft' instead to hide it from future exams."
+      );
+    }
+    throw new Error(error.message);
+  }
 }
 
 export interface QuestionPayload {
@@ -264,22 +272,67 @@ export async function toggleCourseActive(id: string, isActive: boolean): Promise
 
 export async function deleteCourse(id: string): Promise<void> {
   const { error } = await supabase.from("courses").delete().eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === "23503") {
+      throw new Error(
+        "This course has questions that students have already answered. Use 'Hide' instead to remove it from the app, or delete the questions first."
+      );
+    }
+    throw new Error(error.message);
+  }
 }
 
+/**
+ * Fetches per-course question counts via the admin_question_counts() RPC.
+ * Falls back to a client-side count on failure (capped at 1000 rows).
+ */
 export async function fetchQuestionCountsByCourse(): Promise<Record<string, number>> {
-  const { data, error } = await supabase
-    .from("questions")
-    .select("course_id");
-  if (error) throw new Error(error.message);
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    const cid = (row as { course_id: string }).course_id;
-    counts[cid] = (counts[cid] ?? 0) + 1;
+  try {
+    const { data, error } = await supabase.rpc("admin_question_counts");
+    if (error) throw error;
+    const payload = data as { by_course: Record<string, number> };
+    return payload.by_course ?? {};
+  } catch (err) {
+    console.warn("admin_question_counts failed, falling back:", err);
+    const { data, error } = await supabase.from("questions").select("course_id");
+    if (error) throw new Error(error.message);
+    const counts: Record<string, number> = {};
+    for (const row of data ?? []) {
+      const cid = (row as { course_id: string }).course_id;
+      counts[cid] = (counts[cid] ?? 0) + 1;
+    }
+    return counts;
   }
-  return counts;
 }
-// Topic CRUD
+
+/**
+ * Fetches per-topic question counts via the same RPC.
+ */
+export async function fetchQuestionCountsByTopic(): Promise<Record<string, number>> {
+  try {
+    const { data, error } = await supabase.rpc("admin_question_counts");
+    if (error) throw error;
+    const payload = data as { by_topic: Record<string, number> };
+    return payload.by_topic ?? {};
+  } catch (err) {
+    console.warn("admin_question_counts failed, falling back:", err);
+    const { data, error } = await supabase
+      .from("questions")
+      .select("topic_id")
+      .not("topic_id", "is", null);
+    if (error) throw new Error(error.message);
+    const counts: Record<string, number> = {};
+    for (const row of data ?? []) {
+      const tid = (row as { topic_id: string | null }).topic_id;
+      if (tid) counts[tid] = (counts[tid] ?? 0) + 1;
+    }
+    return counts;
+  }
+}
+
+// ============================================
+// TOPIC CRUD
+// ============================================
 export async function createTopic(courseId: string, name: string): Promise<void> {
   const { error } = await supabase
     .from("topics")
@@ -298,20 +351,6 @@ export async function renameTopic(id: string, name: string): Promise<void> {
 export async function deleteTopic(id: string): Promise<void> {
   const { error } = await supabase.from("topics").delete().eq("id", id);
   if (error) throw new Error(error.message);
-}
-
-export async function fetchQuestionCountsByTopic(): Promise<Record<string, number>> {
-  const { data, error } = await supabase
-    .from("questions")
-    .select("topic_id")
-    .not("topic_id", "is", null);
-  if (error) throw new Error(error.message);
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    const tid = (row as { topic_id: string | null }).topic_id;
-    if (tid) counts[tid] = (counts[tid] ?? 0) + 1;
-  }
-  return counts;
 }
 
 // ============================================

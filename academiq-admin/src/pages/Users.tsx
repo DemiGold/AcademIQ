@@ -1,5 +1,5 @@
-import { useState, useMemo} from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   Users as UsersIcon,
@@ -9,7 +9,6 @@ import {
   MoreVertical,
   X,
   Check,
-  UserCog,
   Calendar,
   AlertTriangle,
 } from "lucide-react";
@@ -31,7 +30,7 @@ export default function Users() {
   const [actionUser, setActionUser] = useState<AdminUserRow | null>(null);
 
   // Debounce search
-  useMemo(() => {
+  useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(1);
@@ -276,8 +275,9 @@ export default function Users() {
         </div>
       )}
 
-      {/* Action drawer */}
+      {/* Action drawer — keyed so it remounts per user */}
       <UserActionDrawer
+        key={actionUser?.id ?? "closed"}
         user={actionUser}
         onClose={() => setActionUser(null)}
         onSaved={() => {
@@ -301,18 +301,12 @@ function UserActionDrawer({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [username, setUsername] = useState("");
+  // Initialize from user on mount — the parent's `key` prop remounts this
+  // component per user, so we don't need an effect to reset state.
+  const [username, setUsername] = useState(user?.username ?? "");
   const [premiumDays, setPremiumDays] = useState(30);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Reset when a new user opens
-  useMemo(() => {
-    if (user) {
-      setUsername(user.username ?? "");
-      setError(null);
-    }
-  }, [user?.id]);
 
   if (!user) return null;
 
@@ -338,9 +332,7 @@ function UserActionDrawer({
     setSaving(true);
     setError(null);
     try {
-      const base = isPremiumNow
-        ? new Date(user.premium_expires_at!)
-        : new Date();
+      const base = isPremiumNow ? new Date(user.premium_expires_at!) : new Date();
       const expiry = new Date(base.getTime() + days * 86400000);
       await adminSetPremium(user.id, expiry.toISOString());
       onSaved();

@@ -3,12 +3,16 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../services/supabase";
 import type { Profile } from "../lib/types";
 
+// Module-level: only one auth listener ever. Prevents StrictMode double-subscribe.
+let authUnsubscribe: (() => void) | null = null;
+
 interface AuthState {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
   initialized: boolean;
   loading: boolean;
+  profileLoading: boolean;
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
   refreshProfile: () => Promise<void>;
@@ -22,6 +26,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   profile: null,
   initialized: false,
   loading: false,
+  profileLoading: false,
 
   setSession: (session) => set({ session, user: session?.user ?? null }),
   setProfile: (profile) => set({ profile }),
@@ -29,9 +34,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   refreshProfile: async () => {
     const user = get().user;
     if (!user) {
-      set({ profile: null });
+      set({ profile: null, profileLoading: false });
       return;
     }
+    set({ profileLoading: true });
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -39,15 +45,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       .single();
     if (error) {
       console.error("Profile fetch error:", error.message);
-      set({ profile: null });
+      set({ profile: null, profileLoading: false });
       return;
     }
-    set({ profile: data as Profile });
+    set({ profile: data as Profile, profileLoading: false });
   },
 
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ session: null, user: null, profile: null });
+    set({ session: null, user: null, profile: null, profileLoading: false });
   },
 
   initialize: async () => {
@@ -62,13 +68,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ initialized: true, loading: false });
     }
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      set({ session, user: session?.user ?? null });
-      if (session?.user) {
-        await get().refreshProfile();
-      } else {
-        set({ profile: null });
-      }
-    });
+    if (!authUnsubscribe) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          set({ session, user: session?.user ?? null });
+          if (session?.user) {
+            // Defer to avoid deadlocking the Supabase auth client
+            setTimeout(() => get().refreshProfile(), 0);
+          } else {
+            set({ profile: null, profileLoading: false });
+          }
+        }
+      );
+      authUnsubscribe = () => subscription.unsubscribe();
+    }
   },
 }));

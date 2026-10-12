@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   BookOpen,
@@ -39,17 +40,18 @@ const NAV_SECTIONS = [
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const profile = useAuthStore((s) => s.profile);
   const signOut = useAuthStore((s) => s.signOut);
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
   const loading = useAuthStore((s) => s.loading);
+  const profileLoading = useAuthStore((s) => s.profileLoading);
   const session = useAuthStore((s) => s.session);
 
-  // Auto-logout after 30 minutes of inactivity
   useIdleTimeout(30);
 
-  // Show loading until auth state settles — prevents back-button flash
+  // Gate: wait for auth + profile to settle before deciding
   if (!initialized || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
@@ -58,20 +60,28 @@ export default function AdminLayout() {
     );
   }
 
-  if (!session || !isAdmin) {
-    return <Navigate to="/login" replace />;
+  if (!session) return <Navigate to="/login" replace />;
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <div className="text-text-secondary">Loading profile…</div>
+      </div>
+    );
   }
+
+  if (!isAdmin) return <Navigate to="/login" replace />;
 
   const handleLogout = async () => {
     await signOut();
+    queryClient.clear();
     navigate("/login", { replace: true });
   };
 
-  const displayName = profile?.username ?? "DemiG";
+  const displayName = profile?.username ?? "Admin";
 
   return (
     <div className="flex h-screen bg-bg-primary">
-      {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-bg-border flex flex-col shrink-0">
         <div className="h-16 flex items-center gap-2.5 px-5 border-b border-bg-border">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1A5276] to-[#2E86C1] flex items-center justify-center shadow-sm">
@@ -127,7 +137,6 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        {/* User card */}
         <div className="border-t border-bg-border p-3">
           <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1A5276] to-[#2E86C1] flex items-center justify-center ring-2 ring-brand-primary/10 shrink-0">
@@ -152,7 +161,6 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-white border-b border-bg-border flex items-center justify-between px-6 shrink-0">
           <div>

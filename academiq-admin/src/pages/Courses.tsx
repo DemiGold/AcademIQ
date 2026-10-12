@@ -66,7 +66,7 @@ export default function Courses() {
   const handleDelete = (course: CourseRow, questionCount: number) => {
     const warning =
       questionCount > 0
-        ? `⚠️ "${course.code}" has ${questionCount} questions.\n\nDeleting the course will ALSO delete ALL its questions and topics. This cannot be undone.\n\nType OK to confirm.`
+        ? `⚠️ "${course.code}" has ${questionCount} questions.\n\nDeleting the course will ALSO delete ALL its questions and topics.\n\nThis cannot be undone. Continue?`
         : `Delete course "${course.code} — ${course.name}"?`;
 
     if (confirm(warning)) {

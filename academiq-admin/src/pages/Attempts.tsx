@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
@@ -15,7 +15,6 @@ import {
   fetchAttemptStats,
   fetchAttemptDetail,
   fetchCourses,
-  type AttemptRow,
   type AttemptAnswer,
 } from "../services/adminService";
 
@@ -30,7 +29,8 @@ export default function Attempts() {
   const [page, setPage] = useState(1);
   const [detailId, setDetailId] = useState<string | null>(null);
 
-  useMemo(() => {
+  // Debounce search — useEffect (not useMemo, which ignores cleanup)
+  useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(1);
@@ -332,7 +332,6 @@ function AttemptDetailDrawer({
           </div>
         ) : (
           <div className="p-6 space-y-6">
-            {/* Summary */}
             <div className="bg-bg-primary/40 rounded-xl p-5 grid grid-cols-3 gap-4">
               <SummaryStat
                 label="Score"
@@ -352,7 +351,6 @@ function AttemptDetailDrawer({
               />
             </div>
 
-            {/* Answers */}
             <div className="space-y-3">
               <h4 className="text-sm font-bold text-text-primary">
                 Questions ({detail.answers.length})
