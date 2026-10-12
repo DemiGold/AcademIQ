@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { useIsAdmin } from "../../hooks/useIsAdmin";
+import { useIdleTimeout } from "../../hooks/useIdleTimeout";
 
 const NAV_SECTIONS = [
   {
@@ -42,9 +43,14 @@ export default function AdminLayout() {
   const signOut = useAuthStore((s) => s.signOut);
   const isAdmin = useIsAdmin();
   const initialized = useAuthStore((s) => s.initialized);
+  const loading = useAuthStore((s) => s.loading);
   const session = useAuthStore((s) => s.session);
 
-  if (!initialized) {
+  // Auto-logout after 30 minutes of inactivity
+  useIdleTimeout(30);
+
+  // Show loading until auth state settles — prevents back-button flash
+  if (!initialized || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
         <div className="text-text-secondary">Loading…</div>
