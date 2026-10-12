@@ -1,0 +1,74 @@
+import { create } from "zustand";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "../services/supabase";
+import type { Profile } from "../lib/types";
+
+interface AuthState {
+  session: Session | null;
+  user: User | null;
+  profile: Profile | null;
+  initialized: boolean;
+  loading: boolean;
+  setSession: (session: Session | null) => void;
+  setProfile: (profile: Profile | null) => void;
+  refreshProfile: () => Promise<void>;
+  signOut: () => Promise<void>;
+  initialize: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  session: null,
+  user: null,
+  profile: null,
+  initialized: false,
+  loading: false,
+
+  setSession: (session) => set({ session, user: session?.user ?? null }),
+  setProfile: (profile) => set({ profile }),
+
+  refreshProfile: async () => {
+    const user = get().user;
+    if (!user) {
+      set({ profile: null });
+      return;
+    }
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    if (error) {
+      console.error("Profile fetch error:", error.message);
+      set({ profile: null });
+      return;
+    }
+    set({ profile: data as Profile });
+  },
+
+  signOut: async () => {
+    await supabase.auth.signOut();
+    set({ session: null, user: null, profile: null });
+  },
+
+  initialize: async () => {
+    set({ loading: true });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      set({ session, user: session?.user ?? null });
+      if (session?.user) {
+        await get().refreshProfile();
+      }
+    } finally {
+      set({ initialized: true, loading: false });
+    }
+
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      set({ session, user: session?.user ?? null });
+      if (session?.user) {
+        await get().refreshProfile();
+      } else {
+        set({ profile: null });
+      }
+    });
+  },
+}));
