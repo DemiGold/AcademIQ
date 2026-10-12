@@ -66,3 +66,5 @@ combined_codebase.txt
 extract_code.sh
 academiq-admin-codebase.txt
 extract-code.sh
+academiq-web-codebase.txt
+extract-web.sh
