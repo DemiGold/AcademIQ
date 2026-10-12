@@ -13,9 +13,16 @@ interface Props {
   editing: CourseRow | null;
 }
 
+const FACULTIES = [
+  "Science",
+  "Management Sciences",
+  "Engineering",
+] as const;
+
 export default function CourseFormModal({ open, onClose, onSaved, editing }: Props) {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
+  const [targetFaculty, setTargetFaculty] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,9 +31,11 @@ export default function CourseFormModal({ open, onClose, onSaved, editing }: Pro
     if (editing) {
       setCode(editing.code);
       setName(editing.name);
+      setTargetFaculty(editing.target_faculty ?? null);
     } else {
       setCode("");
       setName("");
+      setTargetFaculty(null);
     }
     setError(null);
   }, [open, editing]);
@@ -48,9 +57,13 @@ export default function CourseFormModal({ open, onClose, onSaved, editing }: Pro
     setSaving(true);
     try {
       if (editing) {
-        await updateCourse(editing.id, { code: cleanCode, name: cleanName });
+        await updateCourse(editing.id, {
+          code: cleanCode,
+          name: cleanName,
+          target_faculty: targetFaculty,
+        });
       } else {
-        await createCourse(cleanCode, cleanName);
+        await createCourse(cleanCode, cleanName, targetFaculty);
       }
       onSaved();
       onClose();
@@ -123,6 +136,39 @@ export default function CourseFormModal({ open, onClose, onSaved, editing }: Pro
               placeholder="Elementary Mathematics II"
               className="w-full px-3 py-2.5 rounded-lg border border-bg-border focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/10 text-sm transition"
             />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-text-secondary mb-2">
+              Target Audience
+            </label>
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-bg-border hover:border-brand-primary/30 cursor-pointer transition">
+                <input
+                  type="radio"
+                  name="target"
+                  checked={targetFaculty === null}
+                  onChange={() => setTargetFaculty(null)}
+                  className="w-4 h-4 accent-brand-primary"
+                />
+                <span className="text-sm text-text-primary">Universal (all students)</span>
+              </label>
+              {FACULTIES.map((f) => (
+                <label
+                  key={f}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-bg-border hover:border-brand-primary/30 cursor-pointer transition"
+                >
+                  <input
+                    type="radio"
+                    name="target"
+                    checked={targetFaculty === f}
+                    onChange={() => setTargetFaculty(f)}
+                    className="w-4 h-4 accent-brand-primary"
+                  />
+                  <span className="text-sm text-text-primary">Faculty of {f}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {error && (

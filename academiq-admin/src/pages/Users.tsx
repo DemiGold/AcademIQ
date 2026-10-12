@@ -139,6 +139,7 @@ export default function Users() {
               <tr className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider border-b border-bg-border bg-bg-primary/40">
                 <th className="px-5 py-3">User</th>
                 <th className="px-5 py-3 w-32">Student ID</th>
+                <th className="px-5 py-3 w-32">Faculty</th>
                 <th className="px-5 py-3 w-40">Department</th>
                 <th className="px-5 py-3 w-40">Status</th>
                 <th className="px-5 py-3 w-32">Joined</th>
@@ -190,6 +191,15 @@ export default function Users() {
                     </td>
                     <td className="px-5 py-3 text-xs text-text-secondary font-mono">
                       {u.student_id ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 text-xs">
+                      {u.faculty ? (
+                        <span className="inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">
+                          {u.faculty === "Management Sciences" ? "MS" : u.faculty}
+                        </span>
+                      ) : (
+                        <span className="text-text-muted italic">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-xs text-text-secondary">
                       <div>{u.department ?? "—"}</div>
@@ -394,6 +404,18 @@ function UserActionDrawer({
           <div className="bg-bg-primary/40 rounded-xl p-4 space-y-3">
             <InfoRow label="Email" value={user.email ?? "—"} />
             <InfoRow label="Student ID" value={user.student_id ?? "—"} />
+            <InfoRow
+              label="Faculty"
+              value={
+                user.faculty ? (
+                  <span className="inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">
+                    {user.faculty}
+                  </span>
+                ) : (
+                  "—"
+                )
+              }
+            />
             <InfoRow label="Department" value={user.department ?? "—"} />
             <InfoRow label="Academic Year" value={user.academic_year ?? "—"} />
             <InfoRow label="Phone" value={user.phone ?? "—"} />

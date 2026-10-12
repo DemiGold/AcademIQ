@@ -189,7 +189,6 @@ export async function fetchQuestions(
 export async function deleteQuestion(id: string): Promise<void> {
   const { error } = await supabase.from("questions").delete().eq("id", id);
   if (error) {
-    // Postgres FK violation — question has been answered by students
     if (error.code === "23503") {
       throw new Error(
         "This question has already been answered by students and can't be deleted. Set it to 'Draft' instead to hide it from future exams."
@@ -231,6 +230,7 @@ export interface CourseRow {
   code: string;
   name: string;
   is_active: boolean;
+  target_faculty: string | null;
   created_at: string;
   question_count?: number;
 }
@@ -238,26 +238,42 @@ export interface CourseRow {
 export async function fetchAllCourses(): Promise<CourseRow[]> {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, code, name, is_active, created_at")
+    .select("id, code, name, is_active, target_faculty, created_at")
     .order("code");
   if (error) throw new Error(error.message);
   return data as CourseRow[];
 }
 
-export async function createCourse(code: string, name: string): Promise<void> {
+export async function createCourse(
+  code: string,
+  name: string,
+  target_faculty: string | null = null
+): Promise<void> {
   const { error } = await supabase
     .from("courses")
-    .insert([{ code: code.trim().toUpperCase(), name: name.trim() }]);
+    .insert([
+      {
+        code: code.trim().toUpperCase(),
+        name: name.trim(),
+        target_faculty,
+      },
+    ]);
   if (error) throw new Error(error.message);
 }
 
 export async function updateCourse(
   id: string,
-  patch: { code?: string; name?: string }
+  patch: { code?: string; name?: string; target_faculty?: string | null }
 ): Promise<void> {
-  const normalized: { code?: string; name?: string } = {};
+  const normalized: {
+    code?: string;
+    name?: string;
+    target_faculty?: string | null;
+  } = {};
   if (patch.code !== undefined) normalized.code = patch.code.trim().toUpperCase();
   if (patch.name !== undefined) normalized.name = patch.name.trim();
+  if (patch.target_faculty !== undefined)
+    normalized.target_faculty = patch.target_faculty;
   const { error } = await supabase.from("courses").update(normalized).eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -282,10 +298,6 @@ export async function deleteCourse(id: string): Promise<void> {
   }
 }
 
-/**
- * Fetches per-course question counts via the admin_question_counts() RPC.
- * Falls back to a client-side count on failure (capped at 1000 rows).
- */
 export async function fetchQuestionCountsByCourse(): Promise<Record<string, number>> {
   try {
     const { data, error } = await supabase.rpc("admin_question_counts");
@@ -305,9 +317,6 @@ export async function fetchQuestionCountsByCourse(): Promise<Record<string, numb
   }
 }
 
-/**
- * Fetches per-topic question counts via the same RPC.
- */
 export async function fetchQuestionCountsByTopic(): Promise<Record<string, number>> {
   try {
     const { data, error } = await supabase.rpc("admin_question_counts");
@@ -365,6 +374,7 @@ export interface AdminUserRow {
   student_id: string | null;
   department: string | null;
   academic_year: string | null;
+  faculty: string | null;
   role: "student" | "super_admin";
   premium_expires_at: string | null;
   created_at: string;

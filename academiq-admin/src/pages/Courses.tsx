@@ -213,7 +213,7 @@ export default function Courses() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="text-lg font-bold text-text-primary truncate">
                         {course.code}
                       </h3>
@@ -224,6 +224,17 @@ export default function Courses() {
                       ) : (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-bg-tertiary text-text-muted text-[10px] font-bold uppercase">
                           Hidden
+                        </span>
+                      )}
+                      {course.target_faculty ? (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">
+                          {course.target_faculty === "Management Sciences"
+                            ? "MS"
+                            : course.target_faculty}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold uppercase">
+                          All
                         </span>
                       )}
                     </div>
