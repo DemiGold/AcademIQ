@@ -11,6 +11,11 @@ import {
   ResetPasswordPage,
 } from "./features/auth";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import CourseDetailPage from "./features/courses/CourseDetailPage";
+import QuizPage from "./features/quiz/QuizPage";
+import ResultPage from "./features/quiz/ResultPage";
+import CGPACalculatorPage from "./features/cgpa/CGPACalculatorPage";
+import ProfilePage from "./features/profile/ProfilePage";
 
 const Stub = ({ name }: { name: string }) => (
   <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
@@ -27,6 +32,27 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+/**
+ * Auth-only guard. Renders children full-screen (no tab bar).
+ * Used for quiz pages which need the entire viewport.
+ */
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const initialized = useAuthStore((s) => s.initialized);
+  const session = useAuthStore((s) => s.session);
+
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <div className="text-text-secondary">Loading…</div>
+      </div>
+    );
+  }
+
+  if (!session) return <Navigate to="/login" replace />;
+
+  return <>{children}</>;
+}
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize);
@@ -48,15 +74,32 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Route>
 
-          {/* Student routes — auth required */}
+          {/* Student routes — auth required, tab bar */}
           <Route element={<StudentLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/courses" element={<Stub name="Courses" />} />
-            <Route path="/courses/:code" element={<Stub name="Course Detail" />} />
-            <Route path="/quiz/:code" element={<Stub name="Quiz" />} />
-            <Route path="/cgpa" element={<Stub name="CGPA Calculator" />} />
-            <Route path="/profile" element={<Stub name="Profile" />} />
+            <Route path="/courses/:code" element={<CourseDetailPage />} />
+            <Route path="/cgpa" element={<CGPACalculatorPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
+
+          {/* Quiz routes — auth required, FULL-SCREEN (no tab bar) */}
+          <Route
+            path="/quiz/:code"
+            element={
+              <ProtectedRoute>
+                <QuizPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quiz/:code/result"
+            element={
+              <ProtectedRoute>
+                <ResultPage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
