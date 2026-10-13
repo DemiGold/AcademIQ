@@ -186,19 +186,44 @@ export default function CourseDetailPage() {
           <label className="block text-xs font-semibold text-text-secondary mb-1.5">
             Topic
           </label>
-          <select
-            value={topicId}
-            onChange={(e) => setTopicId(e.target.value)}
-            disabled={loadingQuestions}
-            className="w-full rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-base py-2.5 px-3 focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20 disabled:opacity-60"
-          >
-            <option value="">All topics</option>
-            {topics.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-wrap gap-2">
+            {/* "All Topics" Pill */}
+            <button
+              type="button"
+              onClick={() => setTopicId("")}
+              disabled={loadingQuestions}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition border ${
+                topicId === ""
+                  ? "bg-brand-primary border-brand-primary text-white shadow-sm"
+                  : "bg-bg-secondary border-bg-border text-text-secondary hover:border-brand-primary/50 hover:text-text-primary"
+              } disabled:opacity-50`}
+            >
+              All Topics
+            </button>
+
+            {/* Individual Topic Pills */}
+            {topics.map((t) => {
+              const isActive = topicId === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTopicId(t.id)}
+                  disabled={loadingQuestions}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition border ${
+                    isActive
+                      ? "bg-brand-primary border-brand-primary text-white shadow-sm"
+                      : "bg-bg-secondary border-bg-border text-text-secondary hover:border-brand-primary/50 hover:text-text-primary"
+                  } disabled:opacity-50`}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
+          </div>
+          {loadingQuestions && (
+            <p className="text-xs text-text-muted mt-2">Loading topics...</p>
+          )}
         </div>
 
         {/* Question count */}
