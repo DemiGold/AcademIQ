@@ -31,9 +31,9 @@ export default function ProfilePage() {
     if (!newStudentId.trim()) return;
     setUpdatingId(true);
     setIdFeedback(null);
-    
+
     const { error } = await supabase.rpc("update_student_id", { p_new_id: newStudentId.trim() });
-    
+
     if (error) {
       if (error.code === "23505") {
         setIdFeedback({ type: "error", text: "This Student ID is already registered to another account." });
@@ -68,7 +68,6 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-5">
-      {/* Profile header */}
       <div className="rounded-2xl border border-bg-border bg-bg-secondary p-5 sm:p-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white font-bold text-xl sm:text-2xl shrink-0 shadow-md">
@@ -91,7 +90,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Premium status */}
       <div className="rounded-xl border border-bg-border bg-bg-secondary p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-3">
           <Crown
@@ -115,36 +113,46 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Academic info */}
       <div className="rounded-xl border border-bg-border bg-bg-secondary p-4 sm:p-5">
         <h2 className="text-sm font-bold text-text-primary mb-3">
           Academic details
         </h2>
         <div className="space-y-3">
-          <Row
-            icon={Hash}
-            label="Student ID"
-            value={profile?.student_id ?? "—"}
-          />
-          <Row
-            icon={GraduationCap}
-            label="Faculty"
-            value={profile?.faculty ?? "—"}
-          />
-          <Row
-            icon={Building2}
-            label="Department"
-            value={profile?.department ?? "—"}
-          />
-          <Row
-            icon={Calendar}
-            label="Academic year"
-            value={profile?.academic_year ?? "—"}
-          />
+          <Row icon={Hash} label="Student ID" value={profile?.student_id ?? "—"} />
+          <Row icon={GraduationCap} label="Faculty" value={profile?.faculty ?? "—"} />
+          <Row icon={Building2} label="Department" value={profile?.department ?? "—"} />
+          <Row icon={Calendar} label="Academic year" value={profile?.academic_year ?? "—"} />
+
+          <div className="mt-4 pt-4 border-t border-bg-border">
+            <label className="block text-xs font-semibold text-text-secondary mb-1.5">
+              Update Student ID (e.g. from JAMB to Matric No.)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newStudentId}
+                onChange={(e) => setNewStudentId(e.target.value.toUpperCase())}
+                placeholder="Enter new 9-digit Matric No."
+                className="flex-1 px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
+              />
+              <Button
+                size="sm"
+                onClick={handleUpdateStudentId}
+                loading={updatingId}
+                disabled={updatingId || !newStudentId.trim()}
+              >
+                Save
+              </Button>
+            </div>
+            {idFeedback && (
+              <p className={`text-xs mt-2 font-medium ${idFeedback.type === "success" ? "text-brand-success" : "text-brand-danger"}`}>
+                {idFeedback.text}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Contact */}
       <div className="rounded-xl border border-bg-border bg-bg-secondary p-4 sm:p-5">
         <h2 className="text-sm font-bold text-text-primary mb-3">
           Contact
@@ -155,7 +163,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="rounded-xl border border-bg-border bg-bg-secondary p-4 sm:p-5 space-y-3">
         <div className="flex items-start gap-3">
           <ShieldCheck size={16} className="text-text-muted shrink-0 mt-0.5" />
