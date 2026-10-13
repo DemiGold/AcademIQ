@@ -186,40 +186,46 @@ export default function CourseDetailPage() {
           <label className="block text-xs font-semibold text-text-secondary mb-1.5">
             Topic
           </label>
-          <div className="flex flex-wrap gap-2">
-            {/* "All Topics" Pill */}
-            <button
-              type="button"
-              onClick={() => setTopicId("")}
-              disabled={loadingQuestions}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition border ${
-                topicId === ""
-                  ? "bg-brand-primary border-brand-primary text-white shadow-sm"
-                  : "bg-bg-secondary border-bg-border text-text-secondary hover:border-brand-primary/50 hover:text-text-primary"
-              } disabled:opacity-50`}
-            >
-              All Topics
-            </button>
+          <div className="relative">
+            <div className="flex overflow-x-auto gap-2 pb-2 -mb-2 scrollbar-hide">
+              {/* "All Topics" Pill */}
+              <button
+                type="button"
+                onClick={() => setTopicId("")}
+                disabled={loadingQuestions}
+                className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition border ${
+                  topicId === ""
+                    ? "bg-brand-primary border-brand-primary text-white shadow-sm"
+                    : "bg-bg-secondary border-bg-border text-text-secondary hover:border-brand-primary/50 hover:text-text-primary"
+                } disabled:opacity-50`}
+              >
+                All Topics
+              </button>
 
-            {/* Individual Topic Pills */}
-            {topics.map((t) => {
-              const isActive = topicId === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTopicId(t.id)}
-                  disabled={loadingQuestions}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition border ${
-                    isActive
-                      ? "bg-brand-primary border-brand-primary text-white shadow-sm"
-                      : "bg-bg-secondary border-bg-border text-text-secondary hover:border-brand-primary/50 hover:text-text-primary"
-                  } disabled:opacity-50`}
-                >
-                  {t.name}
-                </button>
-              );
-            })}
+              {/* Individual Topic Pills */}
+              {topics.map((t) => {
+                const isActive = topicId === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTopicId(t.id)}
+                    disabled={loadingQuestions}
+                    title={t.name} // Shows full name on hover
+                    className={`shrink-0 max-w-[160px] truncate px-4 py-2 rounded-full text-sm font-semibold transition border ${
+                      isActive
+                        ? "bg-brand-primary border-brand-primary text-white shadow-sm"
+                        : "bg-bg-secondary border-bg-border text-text-secondary hover:border-brand-primary/50 hover:text-text-primary"
+                    } disabled:opacity-50`}
+                  >
+                    {t.name}
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Optional: Subtle fade on the right to hint there is more to scroll */}
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-bg-secondary to-transparent pointer-events-none" />
           </div>
           {loadingQuestions && (
             <p className="text-xs text-text-muted mt-2">Loading topics...</p>
