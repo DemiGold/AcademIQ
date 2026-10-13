@@ -225,6 +225,7 @@ function Step1Form({
           <Input
             type="date"
             autoComplete="bday"
+            className="cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-50"
             error={!!errors.dob}
             {...register("dob")}
           />
@@ -274,7 +275,7 @@ function Step2Form({
 
       <FormField label="Student ID" error={errors.student_id?.message} required>
         <Input
-          placeholder="240801001"
+          placeholder="e.g. 202612345678AB or 240801001"
           error={!!errors.student_id}
           {...register("student_id")}
         />

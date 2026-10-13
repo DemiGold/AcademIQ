@@ -36,10 +36,4 @@ export const DEPARTMENTS: Record<FacultyName, string[]> = {
   ],
 };
 
-export const ACADEMIC_YEARS = [
-  "Year 1",
-  "Year 2",
-  "Year 3",
-  "Year 4",
-  "Year 5",
-] as const;
+export const ACADEMIC_YEARS = ["Year 1"] as const;

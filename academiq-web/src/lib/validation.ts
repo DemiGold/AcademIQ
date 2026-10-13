@@ -18,7 +18,7 @@ export const registerStep1Schema = z.object({
 export type RegisterStep1Input = z.infer<typeof registerStep1Schema>;
 
 export const registerStep2Schema = z.object({
-  student_id: z.string().min(4, "Student ID is required"),
+  student_id: z.string().regex(/^(2026\d{8}[A-Za-z]{2}|\d{9})$/, "Must be a 9-digit Matric No. or a 2026 JAMB Reg No. (e.g., 202612345678AB)"),
   faculty: z.enum(["Science", "Management Sciences", "Engineering"], {
     message: "Choose your faculty",
   }),

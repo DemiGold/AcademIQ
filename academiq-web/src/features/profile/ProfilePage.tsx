@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
+import { supabase } from "../../services/supabase";
 import { isPremium, getInitials } from "../../lib/utils";
 import Button from "../../components/ui/Button";
 
@@ -21,6 +22,31 @@ export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const [newStudentId, setNewStudentId] = useState("");
+  const [updatingId, setUpdatingId] = useState(false);
+  const [idFeedback, setIdFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleUpdateStudentId = async () => {
+    if (!newStudentId.trim()) return;
+    setUpdatingId(true);
+    setIdFeedback(null);
+    
+    const { error } = await supabase.rpc("update_student_id", { p_new_id: newStudentId.trim() });
+    
+    if (error) {
+      if (error.code === "23505") {
+        setIdFeedback({ type: "error", text: "This Student ID is already registered to another account." });
+      } else {
+        setIdFeedback({ type: "error", text: error.message });
+      }
+    } else {
+      setIdFeedback({ type: "success", text: "Student ID updated successfully!" });
+      setNewStudentId("");
+      await useAuthStore.getState().refreshProfile();
+    }
+    setUpdatingId(false);
+  };
 
   const handleLogout = async () => {
     if (!window.confirm("Log out of AcademIQ?")) return;
