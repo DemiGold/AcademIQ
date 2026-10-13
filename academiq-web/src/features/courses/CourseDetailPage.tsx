@@ -37,7 +37,6 @@ export default function CourseDetailPage() {
 
   const premium = isPremium(profile);
 
-  // Derive unique topics from loaded questions
   const topics = useMemo(() => {
     if (!questions) return [];
     const map = new Map<string, string>();
@@ -58,11 +57,10 @@ export default function CourseDetailPage() {
   const handleStart = () => {
     if (!course || !questions || questions.length === 0) return;
 
-    // Shuffle questions and take the count we need
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
     const selected = questionCount === 0 ? shuffled : shuffled.slice(0, questionCount);
 
-    const duration = Math.max(60, selected.length * 60); // 60s per question, min 60
+    const duration = Math.max(60, selected.length * 60);
 
     const topicName =
       topicId && topics.length > 0
@@ -111,7 +109,6 @@ export default function CourseDetailPage() {
 
   return (
     <div className="space-y-5">
-      {/* Back */}
       <Link
         to="/dashboard"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition"
@@ -119,7 +116,6 @@ export default function CourseDetailPage() {
         <ArrowLeft size={16} /> Back
       </Link>
 
-      {/* Course header */}
       <div className="rounded-2xl border border-bg-border bg-bg-secondary p-5 sm:p-6">
         <div className="flex items-start gap-3 mb-4">
           <div className="w-12 h-12 rounded-xl bg-brand-primary/10 flex items-center justify-center shrink-0">
@@ -162,7 +158,6 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
-      {/* If not premium — soft upsell */}
       {!premium && course.total_questions > availableCount && (
         <div className="rounded-xl border border-brand-warning/30 bg-brand-warning/5 p-4 flex items-start gap-3">
           <Lock size={18} className="text-brand-warning shrink-0 mt-0.5" />
@@ -175,20 +170,18 @@ export default function CourseDetailPage() {
         </div>
       )}
 
-      {/* Setup */}
       <div className="rounded-2xl border border-bg-border bg-bg-secondary p-5 sm:p-6 space-y-5">
         <h2 className="text-base font-bold text-text-primary">
           Configure your session
         </h2>
 
-        {/* Topic filter */}
+        {/* Topic filter - New Pill UI */}
         <div>
-          <label className="block text-xs font-semibold text-text-secondary mb-1.5">
+          <label className="block text-xs font-semibold text-text-secondary mb-2">
             Topic
           </label>
           <div className="relative">
             <div className="flex overflow-x-auto gap-2 pb-2 -mb-2 scrollbar-hide">
-              {/* "All Topics" Pill */}
               <button
                 type="button"
                 onClick={() => setTopicId("")}
@@ -201,8 +194,6 @@ export default function CourseDetailPage() {
               >
                 All Topics
               </button>
-
-              {/* Individual Topic Pills */}
               {topics.map((t) => {
                 const isActive = topicId === t.id;
                 return (
@@ -211,7 +202,7 @@ export default function CourseDetailPage() {
                     type="button"
                     onClick={() => setTopicId(t.id)}
                     disabled={loadingQuestions}
-                    title={t.name} // Shows full name on hover
+                    title={t.name}
                     className={`shrink-0 max-w-[160px] truncate px-4 py-2 rounded-full text-sm font-semibold transition border ${
                       isActive
                         ? "bg-brand-primary border-brand-primary text-white shadow-sm"
@@ -223,8 +214,6 @@ export default function CourseDetailPage() {
                 );
               })}
             </div>
-            
-            {/* Optional: Subtle fade on the right to hint there is more to scroll */}
             <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-bg-secondary to-transparent pointer-events-none" />
           </div>
           {loadingQuestions && (
@@ -232,7 +221,6 @@ export default function CourseDetailPage() {
           )}
         </div>
 
-        {/* Question count */}
         <div>
           <label className="block text-xs font-semibold text-text-secondary mb-1.5">
             Number of questions
@@ -260,7 +248,6 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
-        {/* Summary */}
         <div className="rounded-lg bg-bg-tertiary p-3 text-xs text-text-secondary flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <FileText size={14} />
