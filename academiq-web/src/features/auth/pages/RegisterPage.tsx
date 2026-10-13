@@ -181,6 +181,12 @@ function Step1Form({
     },
   });
 
+  // DOB range: Oldest born in 2000, Youngest exactly 16 years old today
+  const minDobStr = "2000-01-01";
+  const today = new Date();
+  const maxDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+  const maxDobStr = maxDob.toISOString().split("T")[0];
+
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-4">
       <h2 className="text-lg font-bold text-text-primary">Personal info</h2>
@@ -225,6 +231,8 @@ function Step1Form({
           <Input
             type="date"
             autoComplete="bday"
+            min={minDobStr}
+            max={maxDobStr}
             className="cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-50"
             error={!!errors.dob}
             {...register("dob")}
