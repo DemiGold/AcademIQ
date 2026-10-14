@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Key, CheckCircle2, AlertCircle, Crown } from "lucide-react";
 import { redeemToken } from "../../../services/tokenService";
 import { useAuthStore } from "../../../stores/authStore";
@@ -12,6 +13,7 @@ const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
 )}`;
 
 export default function PremiumBanner() {
+  const queryClient = useQueryClient();
   const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,9 +35,14 @@ export default function PremiumBanner() {
       }
       setFeedback({
         type: "success",
-        text: "Premium unlocked! Refreshing your account…",
+        text: "Premium unlocked! Refreshing your content...",
       });
       setCode("");
+      // Invalidate caches so locked questions/courses refresh instantly
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["questions"] }),
+        queryClient.invalidateQueries({ queryKey: ["student-courses"] }),
+      ]);
       await refreshProfile();
     } catch (err) {
       setFeedback({ type: "error", text: (err as Error).message });
@@ -55,13 +62,12 @@ export default function PremiumBanner() {
             Unlock all questions
           </h2>
           <p className="text-xs sm:text-sm text-text-secondary mt-1 leading-relaxed">
-            You're on the free plan. Get a token on WhatsApp to unlock every
+            You are on the free plan. Get a token on WhatsApp to unlock every
             question in every course for 30 days.
           </p>
         </div>
       </div>
 
-      {/* WhatsApp CTA */}
       <a
         href={whatsappLink}
         target="_blank"
@@ -72,7 +78,6 @@ export default function PremiumBanner() {
         Get a token on WhatsApp
       </a>
 
-      {/* Divider */}
       <div className="flex items-center gap-3 my-4">
         <div className="flex-1 h-px bg-bg-border" />
         <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
@@ -81,7 +86,6 @@ export default function PremiumBanner() {
         <div className="flex-1 h-px bg-bg-border" />
       </div>
 
-      {/* Redeem form */}
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Key
@@ -111,7 +115,6 @@ export default function PremiumBanner() {
         </Button>
       </form>
 
-      {/* Feedback */}
       {feedback && (
         <div
           className={`mt-3 flex items-start gap-2 text-sm rounded-lg px-4 py-3 ${
