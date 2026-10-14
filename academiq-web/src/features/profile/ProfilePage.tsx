@@ -17,6 +17,7 @@ import { supabase } from "../../services/supabase";
 import { useQuizStore } from "../../stores/quizStore";
 import { isPremium, getInitials } from "../../lib/utils";
 import Button from "../../components/ui/Button";
+import PremiumBanner from "../dashboard/components/PremiumBanner";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 function isMatricNo(id: string | null | undefined): boolean {
@@ -86,14 +87,6 @@ export default function ProfilePage() {
   const premium = isPremium(profile);
   const name = profile?.full_name ?? profile?.username ?? "Student";
 
-  const premiumExpiry = profile?.premium_expires_at
-    ? new Date(profile.premium_expires_at).toLocaleDateString("en-NG", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
-
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-bg-border bg-bg-secondary p-5 sm:p-6">
@@ -118,27 +111,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-bg-border bg-bg-secondary p-4 sm:p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Crown
-            size={16}
-            className={premium ? "text-brand-success" : "text-text-muted"}
-          />
-          <h2 className="text-sm font-bold text-text-primary">
-            {premium ? "Premium access" : "Free plan"}
-          </h2>
-        </div>
-        {premium && premiumExpiry ? (
-          <p className="text-xs sm:text-sm text-text-secondary">
-            Your premium access expires on{" "}
-            <strong className="text-text-primary">{premiumExpiry}</strong>.
-          </p>
-        ) : (
-          <p className="text-xs sm:text-sm text-text-secondary">
-            You are on the free plan. Get a token on the dashboard to unlock all questions.
-          </p>
-        )}
-      </div>
+      <PremiumBanner />
 
       <div className="rounded-xl border border-bg-border bg-bg-secondary p-4 sm:p-5">
         <h2 className="text-sm font-bold text-text-primary mb-3">

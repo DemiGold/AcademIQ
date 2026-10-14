@@ -74,8 +74,8 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Premium banner (only if free, and only after courses settle) */}
-      {!premium && !isLoading && <PremiumBanner />}
+      {/* Premium card (handles free, expired, and active states) */}
+      {profile && <PremiumBanner />}
 
       {/* Courses */}
       <div>
