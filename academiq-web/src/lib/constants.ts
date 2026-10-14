@@ -37,3 +37,8 @@ export const DEPARTMENTS: Record<FacultyName, string[]> = {
 };
 
 export const ACADEMIC_YEARS = ["Year 1"] as const;
+
+// Contact
+export const WHATSAPP_NUMBER = "2347078652616";
+export const WHATSAPP_HELP_MESSAGE = "Hi! I have a question about AcademIQ.";
+export const WHATSAPP_TOKEN_MESSAGE = "Hi! I'd like to get an AcademIQ premium token.";

@@ -3,13 +3,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Key, CheckCircle2, AlertCircle, Crown } from "lucide-react";
 import { redeemToken } from "../../../services/tokenService";
 import { useAuthStore } from "../../../stores/authStore";
+import { WHATSAPP_NUMBER, WHATSAPP_TOKEN_MESSAGE } from "../../../lib/constants";
 import Button from "../../../components/ui/Button";
 
-const WHATSAPP_NUMBER = "234707852616";
-const WHATSAPP_MESSAGE = "Hi! I'd like to get an AcademIQ premium token.";
-
 const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-  WHATSAPP_MESSAGE
+  WHATSAPP_TOKEN_MESSAGE
 )}`;
 
 export default function PremiumBanner() {
@@ -38,7 +36,6 @@ export default function PremiumBanner() {
         text: "Premium unlocked! Refreshing your content...",
       });
       setCode("");
-      // Invalidate caches so locked questions/courses refresh instantly
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["questions"] }),
         queryClient.invalidateQueries({ queryKey: ["student-courses"] }),
