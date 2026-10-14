@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Check, AlertCircle } from "lucide-react";
-import { resetPasswordSchema, type ResetPasswordInput } from "../../../lib/validation";
+import { Eye, EyeOff, Check, AlertCircle, Loader2 } from "lucide-react";
+import {
+  resetPasswordSchema,
+  type ResetPasswordInput,
+} from "../../../lib/validation";
 import { updatePassword } from "../../../services/authService";
 import { supabase } from "../../../services/supabase";
 import Button from "../../../components/ui/Button";
@@ -15,14 +18,40 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [sessionReady, setSessionReady] = useState(false);
 
-  // Supabase puts a token in the URL hash; SDK picks it up automatically.
-  // We wait for the session to be available before allowing password change.
+  const [authState, setAuthState] = useState<"checking" | "ready" | "expired">(
+    "checking"
+  );
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setSessionReady(true);
+    let cancelled = false;
+
+    const finish = (ready: boolean) => {
+      if (!cancelled) setAuthState(ready ? "ready" : "expired");
+    };
+
+    const check = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        finish(true);
+        return;
+      }
+      setTimeout(async () => {
+        const { data: retry } = await supabase.auth.getSession();
+        finish(!!retry.session);
+      }, 500);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) finish(true);
     });
+
+    check();
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const {
@@ -52,26 +81,49 @@ export default function ResetPasswordPage() {
           <div className="w-16 h-16 rounded-full bg-brand-success/10 flex items-center justify-center mx-auto mb-5">
             <Check size={28} className="text-brand-success" />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary">Password updated</h1>
+          <h1 className="text-2xl font-bold text-text-primary">
+            Password updated
+          </h1>
           <p className="text-sm text-text-secondary mt-3">
-            Redirecting you to your dashboard…
+            Redirecting you to your dashboard...
           </p>
         </div>
       </div>
     );
   }
 
-  if (!sessionReady) {
+  if (authState === "checking") {
+    return (
+      <div className="min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md text-center">
+          <Loader2
+            size={32}
+            className="animate-spin text-brand-primary mx-auto mb-5"
+          />
+          <h1 className="text-xl font-bold text-text-primary">
+            Verifying your reset link
+          </h1>
+          <p className="text-sm text-text-secondary mt-2">
+            This will only take a moment.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (authState === "expired") {
     return (
       <div className="min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md text-center">
           <div className="w-16 h-16 rounded-full bg-brand-warning/10 flex items-center justify-center mx-auto mb-5">
             <AlertCircle size={28} className="text-brand-warning" />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary">Link expired</h1>
+          <h1 className="text-2xl font-bold text-text-primary">
+            Link expired
+          </h1>
           <p className="text-sm text-text-secondary mt-3 leading-relaxed">
-            This password reset link is invalid or has expired. Request a new one
-            from the login page.
+            This password reset link is invalid or has expired. Request a new
+            one from the login page.
           </p>
           <Button
             size="lg"
