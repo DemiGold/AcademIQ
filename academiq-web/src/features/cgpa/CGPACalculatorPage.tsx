@@ -10,6 +10,7 @@ import {
   generateId,
 } from "./utils/grades";
 import Button from "../../components/ui/Button";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 const STORAGE_KEY = "academiq-cgpa-v1";
 
@@ -35,6 +36,7 @@ function defaultEntries(): CourseEntry[] {
 
 export default function CGPACalculatorPage() {
   const [courses, setCourses] = useState<CourseEntry[]>(() => loadStored());
+  const [resetConfirm, setResetConfirm] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
@@ -69,7 +71,11 @@ export default function CGPACalculatorPage() {
   };
 
   const resetAll = () => {
-    if (!window.confirm("Clear all courses and start fresh?")) return;
+    setResetConfirm(true);
+  };
+
+  const confirmReset = () => {
+    setResetConfirm(false);
     setCourses(defaultEntries());
   };
 
@@ -224,6 +230,17 @@ export default function CGPACalculatorPage() {
       <p className="text-xs text-text-muted text-center">
         Saved automatically to this browser. Nothing sent to the server.
       </p>
+
+      <ConfirmDialog
+        open={resetConfirm}
+        title="Clear all courses?"
+        message="This will remove every course you have entered and start fresh. This can't be undone."
+        confirmLabel="Clear all"
+        cancelLabel="Cancel"
+        tone="danger"
+        onConfirm={confirmReset}
+        onCancel={() => setResetConfirm(false)}
+      />
     </div>
   );
 }

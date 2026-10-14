@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { useQuizStore } from "../../stores/quizStore";
 import { submitExamAttempt } from "../../services/examService";
 import Button from "../../components/ui/Button";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import QuizTopBar from "./components/QuizTopBar";
 import QuestionBlock from "./components/QuestionBlock";
 
@@ -27,11 +28,11 @@ export default function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [exitConfirm, setExitConfirm] = useState(false);
+  const [submitConfirm, setSubmitConfirm] = useState(false);
 
   const autoSubmitRef = useRef(false);
   const initialTickDone = useRef(false);
 
-  // Wall-clock tick. Runs while we have an active session.
   useEffect(() => {
     if (!sessionId) return;
     tick();
@@ -40,7 +41,6 @@ export default function QuizPage() {
     return () => clearInterval(interval);
   }, [sessionId, tick]);
 
-  // Warn before closing the tab (still useful as a UX cue).
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -57,6 +57,7 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentIndex];
   const answeredCount = Object.keys(answers).length;
+  const unansweredCount = questions.length - answeredCount;
 
   const doSubmit = async () => {
     if (submitting) return;
@@ -77,11 +78,10 @@ export default function QuizPage() {
     } catch (err) {
       setError((err as Error).message);
       setSubmitting(false);
-      autoSubmitRef.current = false; // allow retry on next tick
+      autoSubmitRef.current = false;
     }
   };
 
-  // Auto-submit exactly once when time runs out (after the first tick).
   useEffect(() => {
     if (!initialTickDone.current) return;
     if (timeLeft > 0 || autoSubmitRef.current) return;
@@ -112,15 +112,15 @@ export default function QuizPage() {
   };
 
   const handleManualSubmit = () => {
-    const unanswered = questions.length - Object.keys(answers).length;
-    if (unanswered > 0) {
-      if (
-        !window.confirm(
-          `You have ${unanswered} unanswered ${unanswered === 1 ? "question" : "questions"}. Submit anyway?`
-        )
-      )
-        return;
+    if (unansweredCount > 0) {
+      setSubmitConfirm(true);
+    } else {
+      void doSubmit();
     }
+  };
+
+  const handleConfirmSubmit = () => {
+    setSubmitConfirm(false);
     void doSubmit();
   };
 
@@ -186,36 +186,30 @@ export default function QuizPage() {
         </div>
       </div>
 
-      {exitConfirm && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
-          onClick={() => setExitConfirm(false)}
-        >
-          <div
-            className="bg-bg-secondary w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6 border-t sm:border border-bg-border"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-text-primary mb-2">
-              Exit without submitting?
-            </h3>
-            <p className="text-sm text-text-secondary mb-5">
-              Your answers for this session will be discarded. This can't be undone.
-            </p>
-            <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => setExitConfirm(false)}
-              >
-                Keep practicing
-              </Button>
-              <Button variant="danger" fullWidth onClick={confirmExit}>
-                Exit anyway
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={submitConfirm}
+        title="Submit with unanswered questions?"
+        message={`You have ${unansweredCount} unanswered ${
+          unansweredCount === 1 ? "question" : "questions"
+        }. They will be marked as wrong. You can still come back and answer them before submitting.`}
+        confirmLabel="Submit anyway"
+        cancelLabel="Keep practicing"
+        tone="danger"
+        loading={submitting}
+        onConfirm={handleConfirmSubmit}
+        onCancel={() => setSubmitConfirm(false)}
+      />
+
+      <ConfirmDialog
+        open={exitConfirm}
+        title="Exit without submitting?"
+        message="Your answers for this session will be discarded. This can't be undone."
+        confirmLabel="Exit anyway"
+        cancelLabel="Keep practicing"
+        tone="danger"
+        onConfirm={confirmExit}
+        onCancel={() => setExitConfirm(false)}
+      />
     </div>
   );
 }

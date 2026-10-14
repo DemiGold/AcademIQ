@@ -17,6 +17,7 @@ import { supabase } from "../../services/supabase";
 import { useQuizStore } from "../../stores/quizStore";
 import { isPremium, getInitials } from "../../lib/utils";
 import Button from "../../components/ui/Button";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 function isMatricNo(id: string | null | undefined): boolean {
   if (!id) return false;
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
 
   const [newStudentId, setNewStudentId] = useState("");
   const [updatingId, setUpdatingId] = useState(false);
@@ -69,8 +71,12 @@ export default function ProfilePage() {
     setUpdatingId(false);
   };
 
-  const handleLogout = async () => {
-    if (!window.confirm("Log out of AcademIQ?")) return;
+  const handleLogout = () => {
+    setLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setLogoutConfirm(false);
     setLoggingOut(true);
     await signOut();
     useQuizStore.getState().reset();
@@ -231,6 +237,18 @@ export default function ProfilePage() {
           Log out
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={logoutConfirm}
+        title="Log out of AcademIQ?"
+        message="You'll need to sign in again to continue."
+        confirmLabel="Log out"
+        cancelLabel="Stay signed in"
+        tone="danger"
+        loading={loggingOut}
+        onConfirm={confirmLogout}
+        onCancel={() => setLogoutConfirm(false)}
+      />
     </div>
   );
 }
