@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Search, Loader2, X } from "lucide-react";
+import { BookOpen, Search, X } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { useCourses } from "../../hooks/useCourses";
 import { isPremium } from "../../lib/utils";
+import { CourseGridSkeleton } from "../../components/ui/Skeleton";
 import CourseCard from "../dashboard/components/CourseCard";
 
 export default function CoursesListPage() {
@@ -32,11 +33,13 @@ export default function CoursesListPage() {
           Courses
         </h1>
         <p className="text-sm text-text-secondary mt-1">
-          {courses
+          {isLoading
+            ? "Loading your courses..."
+            : courses
             ? `${courses.length} ${
                 courses.length === 1 ? "course" : "courses"
               } available for your faculty`
-            : "Loading your courses…"}
+            : ""}
         </p>
       </div>
 
@@ -50,8 +53,9 @@ export default function CoursesListPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by course code or name…"
-          className="w-full pl-10 pr-10 py-3 rounded-lg border border-bg-border bg-bg-secondary text-text-primary placeholder:text-text-muted text-base focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20 transition"
+          placeholder="Search by course code or name..."
+          disabled={isLoading}
+          className="w-full pl-10 pr-10 py-3 rounded-lg border border-bg-border bg-bg-secondary text-text-primary placeholder:text-text-muted text-base focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20 transition disabled:opacity-60"
         />
         {search && (
           <button
@@ -66,9 +70,7 @@ export default function CoursesListPage() {
 
       {/* List */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 size={24} className="animate-spin text-text-muted" />
-        </div>
+        <CourseGridSkeleton count={6} />
       ) : error ? (
         <div className="rounded-xl border border-brand-danger/30 bg-brand-danger/10 px-4 py-3 text-sm text-brand-danger">
           Failed to load courses: {(error as Error).message}
@@ -84,7 +86,7 @@ export default function CoursesListPage() {
           <p className="text-xs text-text-secondary max-w-xs mx-auto">
             {search.trim()
               ? "Try a different search term."
-              : "Check back soon — new courses are being added."}
+              : "Check back soon. New courses are being added."}
           </p>
         </div>
       ) : (

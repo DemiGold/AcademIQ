@@ -1,7 +1,11 @@
-import { BookOpen, Sparkles, Trophy, Loader2 } from "lucide-react";
+import { BookOpen, Sparkles, Trophy } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { useCourses } from "../../hooks/useCourses";
 import { isPremium } from "../../lib/utils";
+import {
+  CourseGridSkeleton,
+  StatCardSkeleton,
+} from "../../components/ui/Skeleton";
 import PremiumBanner from "./components/PremiumBanner";
 import CourseCard from "./components/CourseCard";
 
@@ -13,9 +17,16 @@ export default function DashboardPage() {
   const name = profile?.full_name?.split(" ")[0] ?? "there";
 
   const totalAvailable =
-    courses?.reduce((sum, c) => sum + (premium ? c.total_questions : c.available_questions), 0) ?? 0;
-  const totalLocked =
-    premium ? 0 : courses?.reduce((sum, c) => sum + (c.total_questions - c.available_questions), 0) ?? 0;
+    courses?.reduce(
+      (sum, c) => sum + (premium ? c.total_questions : c.available_questions),
+      0
+    ) ?? 0;
+  const totalLocked = premium
+    ? 0
+    : courses?.reduce(
+        (sum, c) => sum + (c.total_questions - c.available_questions),
+        0
+      ) ?? 0;
 
   return (
     <div className="space-y-6">
@@ -33,28 +44,38 @@ export default function DashboardPage() {
 
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-3">
-        <StatCard
-          icon={BookOpen}
-          label="Courses"
-          value={courses?.length ?? 0}
-          tone="brand"
-        />
-        <StatCard
-          icon={Sparkles}
-          label="Available"
-          value={totalAvailable}
-          tone="success"
-        />
-        <StatCard
-          icon={Trophy}
-          label="Locked"
-          value={totalLocked}
-          tone={totalLocked > 0 ? "warning" : "muted"}
-        />
+        {isLoading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              icon={BookOpen}
+              label="Courses"
+              value={courses?.length ?? 0}
+              tone="brand"
+            />
+            <StatCard
+              icon={Sparkles}
+              label="Available"
+              value={totalAvailable}
+              tone="success"
+            />
+            <StatCard
+              icon={Trophy}
+              label="Locked"
+              value={totalLocked}
+              tone={totalLocked > 0 ? "warning" : "muted"}
+            />
+          </>
+        )}
       </div>
 
-      {/* Premium banner (only if free) */}
-      {!premium && <PremiumBanner />}
+      {/* Premium banner (only if free, and only after courses settle) */}
+      {!premium && !isLoading && <PremiumBanner />}
 
       {/* Courses */}
       <div>
@@ -62,7 +83,7 @@ export default function DashboardPage() {
           <h2 className="text-base sm:text-lg font-bold text-text-primary">
             Your courses
           </h2>
-          {courses && (
+          {courses && !isLoading && (
             <span className="text-xs text-text-muted">
               {courses.length} {courses.length === 1 ? "course" : "courses"}
             </span>
@@ -70,9 +91,7 @@ export default function DashboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-text-muted" />
-          </div>
+          <CourseGridSkeleton count={6} />
         ) : error ? (
           <div className="rounded-xl border border-brand-danger/30 bg-brand-danger/10 px-4 py-3 text-sm text-brand-danger">
             Failed to load courses: {(error as Error).message}
@@ -92,7 +111,7 @@ export default function DashboardPage() {
               No courses available
             </h3>
             <p className="text-xs text-text-secondary max-w-xs mx-auto">
-              Check back soon — new courses are being added.
+              Check back soon. New courses are being added.
             </p>
           </div>
         )}
