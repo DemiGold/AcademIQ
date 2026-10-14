@@ -63,15 +63,14 @@ export default function Users() {
   }, [rows, filter]);
 
   const stats = useMemo(() => {
+    // Admins are counted separately and never included in premium/free.
     const admins = rows.filter((u) => u.role === "super_admin").length;
-    const premium = rows.filter(
+    const nonAdmins = rows.filter((u) => u.role !== "super_admin");
+    const premium = nonAdmins.filter(
       (u) => u.premium_expires_at && new Date(u.premium_expires_at) > new Date()
     ).length;
-    return {
-      admins,
-      premium,
-      free: rows.length - premium - admins,
-    };
+    const free = nonAdmins.length - premium;
+    return { admins, premium, free };
   }, [rows]);
 
   return (
