@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { useQuizStore } from "../../stores/quizStore";
@@ -28,26 +28,19 @@ export default function QuizPage() {
   const [error, setError] = useState<string | null>(null);
   const [exitConfirm, setExitConfirm] = useState(false);
 
-  // Handle missing session (e.g., user refreshed the page)
-  if (!sessionId || !questions || !courseId || !courseCode) {
-    return <Navigate to={`/courses/${code}`} replace />;
-  }
+  const autoSubmitRef = useRef(false);
+  const initialTickDone = useRef(false);
 
-  const currentQuestion = questions[currentIndex];
-  const answeredCount = Object.keys(answers).length;
-
-  // Tick the timer
+  // Wall-clock tick. Runs while we have an active session.
   useEffect(() => {
-    if (timeLeft <= 0) {
-      void handleAutoSubmit();
-      return;
-    }
+    if (!sessionId) return;
+    tick();
+    initialTickDone.current = true;
     const interval = setInterval(() => tick(), 1000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft]);
+  }, [sessionId, tick]);
 
-  // Warn before browser close
+  // Warn before closing the tab (still useful as a UX cue).
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -56,6 +49,46 @@ export default function QuizPage() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
+
+  // Early return AFTER all hooks to avoid the "fewer hooks than expected" crash.
+  if (!sessionId || !questions || !courseId || !courseCode) {
+    return <Navigate to={`/courses/${code}`} replace />;
+  }
+
+  const currentQuestion = questions[currentIndex];
+  const answeredCount = Object.keys(answers).length;
+
+  const doSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+
+    const payload = questions.map((q) => ({
+      question_id: q.id,
+      selected_index: answers[q.id] ?? null,
+    }));
+
+    try {
+      const attemptId = await submitExamAttempt(sessionId, courseId, payload);
+      navigate(`/quiz/${courseCode}/result`, {
+        replace: true,
+        state: { attemptId, questions, answers },
+      });
+    } catch (err) {
+      setError((err as Error).message);
+      setSubmitting(false);
+      autoSubmitRef.current = false; // allow retry on next tick
+    }
+  };
+
+  // Auto-submit exactly once when time runs out (after the first tick).
+  useEffect(() => {
+    if (!initialTickDone.current) return;
+    if (timeLeft > 0 || autoSubmitRef.current) return;
+    autoSubmitRef.current = true;
+    void doSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
 
   const handleExit = () => {
     if (Object.keys(answers).length > 0) {
@@ -78,48 +111,16 @@ export default function QuizPage() {
     if (currentIndex > 0) setIndex(currentIndex - 1);
   };
 
-  const buildPayload = () => {
-    return questions.map((q) => ({
-      question_id: q.id,
-      selected_index: answers[q.id] ?? null,
-    }));
-  };
-
-  const doSubmit = async () => {
-    setSubmitting(true);
-    setError(null);
-    try {
-      const attemptId = await submitExamAttempt(
-        sessionId,
-        courseId,
-        buildPayload()
-      );
-      navigate(`/quiz/${courseCode}/result`, {
-        replace: true,
-        state: { attemptId, questions, answers },
-      });
-    } catch (err) {
-      setError((err as Error).message);
-      setSubmitting(false);
-    }
-  };
-
   const handleManualSubmit = () => {
     const unanswered = questions.length - Object.keys(answers).length;
     if (unanswered > 0) {
       if (
         !window.confirm(
-          `You have ${unanswered} unanswered ${
-            unanswered === 1 ? "question" : "questions"
-          }. Submit anyway?`
+          `You have ${unanswered} unanswered ${unanswered === 1 ? "question" : "questions"}. Submit anyway?`
         )
       )
         return;
     }
-    void doSubmit();
-  };
-
-  const handleAutoSubmit = async () => {
     void doSubmit();
   };
 
@@ -135,7 +136,6 @@ export default function QuizPage() {
         submitting={submitting}
       />
 
-      {/* Main content */}
       <div className="max-w-4xl mx-auto px-3 sm:px-6 py-5 pb-24 sm:pb-6">
         <QuestionBlock
           question={currentQuestion}
@@ -152,7 +152,6 @@ export default function QuizPage() {
         )}
       </div>
 
-      {/* Bottom nav — sticky on mobile */}
       <div className="fixed sm:sticky bottom-0 inset-x-0 z-20 border-t border-bg-border bg-bg-secondary/95 backdrop-blur-md pb-safe">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 flex items-center gap-2">
           <Button
@@ -187,7 +186,6 @@ export default function QuizPage() {
         </div>
       </div>
 
-      {/* Exit confirm modal */}
       {exitConfirm && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
@@ -201,8 +199,7 @@ export default function QuizPage() {
               Exit without submitting?
             </h3>
             <p className="text-sm text-text-secondary mb-5">
-              Your answers for this session will be discarded. This can't be
-              undone.
+              Your answers for this session will be discarded. This can't be undone.
             </p>
             <div className="flex flex-col-reverse sm:flex-row gap-2">
               <Button

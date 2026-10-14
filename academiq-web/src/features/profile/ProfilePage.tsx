@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { supabase } from "../../services/supabase";
+import { useQuizStore } from "../../stores/quizStore";
 import { isPremium, getInitials } from "../../lib/utils";
 import Button from "../../components/ui/Button";
 
@@ -72,6 +73,7 @@ export default function ProfilePage() {
     if (!window.confirm("Log out of AcademIQ?")) return;
     setLoggingOut(true);
     await signOut();
+    useQuizStore.getState().reset();
     navigate("/login", { replace: true });
   };
 

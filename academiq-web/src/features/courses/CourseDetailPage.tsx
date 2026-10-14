@@ -5,7 +5,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useCourses } from "../../hooks/useCourses";
 import { useQuestions } from "../../hooks/useQuestions";
 import { useQuizStore } from "../../stores/quizStore";
-import { isPremium } from "../../lib/utils";
+import { isPremium, shuffle } from "../../lib/utils";
 import Button from "../../components/ui/Button";
 
 const QUESTION_COUNTS = [
@@ -57,7 +57,7 @@ export default function CourseDetailPage() {
   const handleStart = () => {
     if (!course || !questions || questions.length === 0) return;
 
-    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    const shuffled = shuffle(questions);
     const selected = questionCount === 0 ? shuffled : shuffled.slice(0, questionCount);
 
     const duration = Math.max(60, selected.length * 60);
@@ -140,10 +140,14 @@ export default function CourseDetailPage() {
           </div>
           <div>
             <div className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
-              {premium ? "Total" : "Locked"}
+              {!premium && !topicId ? "Locked" : premium ? "Total" : "Available"}
             </div>
             <div className="text-lg font-bold text-text-primary mt-0.5">
-              {loadingQuestions ? "…" : premium ? availableCount : course.total_questions - availableCount}
+              {loadingQuestions
+                ? "..."
+                : !premium && !topicId
+                ? Math.max(0, course.total_questions - availableCount)
+                : availableCount}
             </div>
           </div>
           <div>

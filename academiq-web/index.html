@@ -3,8 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>academiq-web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1A5276" />
+    <meta
+      name="description"
+      content="AcademIQ - practice past-question-style exams for UNILAG in a real CBT environment. Free to start."
+    />
+
+    <meta property="og:title" content="AcademIQ - Practice CBT for UNILAG" />
+    <meta
+      property="og:description"
+      content="Practice past-question-style exams, get instant scores, and track your progress."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.academiqapp.me" />
+
+    <title>AcademIQ - Practice CBT for UNILAG</title>
+
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("academiq-theme");
+          if (theme !== "dark" && theme !== "light") {
+            theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          }
+          if (theme === "dark") document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -2,6 +2,7 @@ import { Outlet, Link, NavLink, useNavigate, Navigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { GraduationCap, Home, BookOpen, Calculator, User, LogOut } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
+import { useQuizStore } from "../../stores/quizStore";
 import ThemeToggle from "../ui/ThemeToggle";
 import { isPremium } from "../../lib/utils";
 
@@ -41,6 +42,7 @@ export default function StudentLayout() {
 
   const handleLogout = async () => {
     await signOut();
+    useQuizStore.getState().reset();
     queryClient.clear();
     navigate("/login", { replace: true });
   };
