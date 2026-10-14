@@ -18,6 +18,7 @@ import ResultPage from "./features/quiz/ResultPage";
 import CGPACalculatorPage from "./features/cgpa/CGPACalculatorPage";
 import ProfilePage from "./features/profile/ProfilePage";
 import LandingPage from "./features/landing/LandingPage";
+import NotFoundPage from "./features/not-found/NotFoundPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,12 +40,33 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!initialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-        <div className="text-text-secondary">Loading…</div>
+        <div className="text-text-secondary">Loading...</div>
       </div>
     );
   }
 
   if (!session) return <Navigate to="/login" replace />;
+
+  return <>{children}</>;
+}
+
+/**
+ * Guests-only guard. Redirects logged-in users away from auth pages
+ * so they never see the login form again once they're already in.
+ */
+function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
+  const initialized = useAuthStore((s) => s.initialized);
+  const session = useAuthStore((s) => s.session);
+
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <div className="text-text-secondary">Loading...</div>
+      </div>
+    );
+  }
+
+  if (session) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 }
@@ -60,16 +82,36 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public routes — no auth */}
+          {/* Public routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <LoginPage />
+                </PublicOnlyRoute>
+              }
+            />
+
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <RegisterPage />
+                </PublicOnlyRoute>
+              }
+            />
+
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+            {/* Catch-all 404 inside the public chrome */}
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          {/* Student routes — auth required, tab bar */}
+          {/* Student routes - auth required, tab bar */}
           <Route element={<StudentLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/courses" element={<CoursesListPage />} />
@@ -78,7 +120,7 @@ export default function App() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
-          {/* Quiz routes — auth required, FULL-SCREEN (no tab bar) */}
+          {/* Quiz routes - auth required, FULL-SCREEN (no tab bar) */}
           <Route
             path="/quiz/:code"
             element={
@@ -95,8 +137,6 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
