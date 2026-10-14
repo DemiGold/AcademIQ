@@ -62,6 +62,7 @@ The public app where students sign up, practice and track results.
 
 **Features**
 - **Authentication:** email and password, with a 3-step signup (personal, academic, password) and password reset by email
+- **One-time ID upgrade:** students who register with a JAMB number can update to their Matric number once
 - **Faculty-aware courses:** students see the courses targeted at their faculty
 - **Topic-based practice:** pick a course, an optional topic and a number of questions
 - **CBT simulation:** timed exam, question navigation, auto-submit when time runs out
@@ -112,6 +113,7 @@ Supabase Postgres, with Row Level Security enabled on every table. Business logi
 | `get_questions_for_course()` | Published questions; free users only receive the ones flagged free |
 | `submit_attempt()` | Idempotent attempt sync: re-scores on the server and stores the attempt and answers |
 | `redeem_token()` | Atomic one-time redemption, extends premium by 30 days, rate-limited |
+| `update_student_id()` | One-time JAMB to Matric upgrade. Validates format, refuses if already a Matric number |
 | `generate_tokens()` | Unambiguous `ACAD-XXXX-XXXX` codes (run from the SQL editor, not callable by clients) |
 | `admin_stats()`, `admin_list_users()`, `admin_list_tokens()`, `admin_generate_tokens()`, `admin_set_premium()`, `admin_list_attempts()` | Admin-only operations, each guarded by `is_admin()` |
 
@@ -192,7 +194,7 @@ Components use semantic tokens (`text-primary`, `bg-border`, and so on), so pale
 
 ## ⚠️ Known Limitations
 
-- Quiz progress is held in memory, so refreshing mid-quiz returns the student to the course page.
+- Quiz progress is saved to sessionStorage, so refreshing the same tab resumes the attempt. Opening in a new tab starts fresh.
 - Questions are delivered to the device with their correct answers. This is deliberate (instant review and offline scoring) and appropriate for practice, not proctored exams.
 - The mobile app is not built yet.
 
@@ -219,7 +221,7 @@ Components use semantic tokens (`text-primary`, `bg-border`, and so on), so pale
 - [x] Faculty-based course targeting
 - [x] Bulk CSV question upload
 - [x] Dark mode
-- [ ] Persist quiz progress across refreshes
+- [x] Persist quiz progress across refreshes
 - [ ] Mobile app (Android first)
 - [ ] Offline quiz mode
 - [ ] Push notifications for new courses
