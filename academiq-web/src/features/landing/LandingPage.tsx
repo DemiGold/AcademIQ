@@ -10,12 +10,13 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Button from "../../components/ui/Button";
-
-const WHATSAPP_NUMBER = "234707852616";
-const WHATSAPP_MESSAGE = "Hi! I have a question about AcademIQ.";
+import {
+  WHATSAPP_NUMBER,
+  WHATSAPP_HELP_MESSAGE,
+} from "../../lib/constants";
 
 const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-  WHATSAPP_MESSAGE
+  WHATSAPP_HELP_MESSAGE
 )}`;
 
 export default function LandingPage() {
@@ -50,7 +51,7 @@ export default function LandingPage() {
                 <ArrowRight size={16} />
               </Button>
             </Link>
-            <Link to="/cgpa" className="w-full sm:w-auto">
+            <Link to="/calculator" className="w-full sm:w-auto">
               <Button
                 variant="secondary"
                 size="lg"
@@ -135,7 +136,7 @@ export default function LandingPage() {
               No signup needed. Enter your courses, units, and grades to see your
               CGPA and class of degree instantly.
             </p>
-            <Link to="/cgpa">
+            <Link to="/calculator">
               <Button size="lg">
                 Open Calculator
                 <ArrowRight size={16} />

@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { useQuizStore } from "../../stores/quizStore";
 import { submitExamAttempt } from "../../services/examService";
+import { classNames } from "../../lib/utils";
+import type { Question } from "../../lib/types";
 import Button from "../../components/ui/Button";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import QuizTopBar from "./components/QuizTopBar";
@@ -32,6 +34,7 @@ export default function QuizPage() {
 
   const autoSubmitRef = useRef(false);
   const initialTickDone = useRef(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -50,17 +53,15 @@ export default function QuizPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
 
-  // Early return AFTER all hooks to avoid the "fewer hooks than expected" crash.
-  if (!sessionId || !questions || !courseId || !courseCode) {
-    return <Navigate to={`/courses/${code}`} replace />;
-  }
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentIndex]);
 
-  const currentQuestion = questions[currentIndex];
-  const answeredCount = Object.keys(answers).length;
-  const unansweredCount = questions.length - answeredCount;
+  const doSubmit = useCallback(async () => {
+    if (!sessionId || !courseId || !courseCode || !questions) return;
+    if (submittingRef.current) return;
 
-  const doSubmit = async () => {
-    if (submitting) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setError(null);
 
@@ -77,18 +78,31 @@ export default function QuizPage() {
       });
     } catch (err) {
       setError((err as Error).message);
+      submittingRef.current = false;
       setSubmitting(false);
       autoSubmitRef.current = false;
     }
-  };
+  }, [sessionId, courseId, courseCode, questions, answers, navigate]);
 
   useEffect(() => {
     if (!initialTickDone.current) return;
     if (timeLeft > 0 || autoSubmitRef.current) return;
     autoSubmitRef.current = true;
     void doSubmit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft]);
+  }, [timeLeft, doSubmit]);
+
+  if (!sessionId || !questions || !courseId || !courseCode) {
+    return <Navigate to={`/courses/${code}`} replace />;
+  }
+
+  const currentQuestion = questions[currentIndex];
+  const answeredCount = Object.keys(answers).length;
+  const unansweredCount = questions.length - answeredCount;
+
+  const confirmExit = () => {
+    reset();
+    navigate(`/courses/${code}`, { replace: true });
+  };
 
   const handleExit = () => {
     if (Object.keys(answers).length > 0) {
@@ -96,11 +110,6 @@ export default function QuizPage() {
     } else {
       confirmExit();
     }
-  };
-
-  const confirmExit = () => {
-    reset();
-    navigate(`/courses/${code}`, { replace: true });
   };
 
   const handleNext = () => {
@@ -137,6 +146,13 @@ export default function QuizPage() {
       />
 
       <div className="max-w-4xl mx-auto px-3 sm:px-6 py-5 pb-24 sm:pb-6">
+        <QuickNav
+          questions={questions}
+          currentIndex={currentIndex}
+          answers={answers}
+          onJump={setIndex}
+        />
+
         <QuestionBlock
           question={currentQuestion}
           index={currentIndex}
@@ -210,6 +226,52 @@ export default function QuizPage() {
         onConfirm={confirmExit}
         onCancel={() => setExitConfirm(false)}
       />
+    </div>
+  );
+}
+
+function QuickNav({
+  questions,
+  currentIndex,
+  answers,
+  onJump,
+}: {
+  questions: Question[];
+  currentIndex: number;
+  answers: Record<string, number>;
+  onJump: (index: number) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-bg-border bg-bg-secondary p-3 mb-4">
+      <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">
+        Quick Navigation
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+        {questions.map((q, i) => {
+          const isCurrent = i === currentIndex;
+          const isAnswered = answers[q.id] !== undefined;
+
+          return (
+            <button
+              key={q.id}
+              type="button"
+              onClick={() => onJump(i)}
+              className={classNames(
+                "shrink-0 w-9 h-9 rounded-full border text-xs font-bold transition",
+                isCurrent
+                  ? "bg-brand-primary border-brand-primary text-white"
+                  : isAnswered
+                  ? "bg-brand-success/15 border-brand-success/50 text-brand-success hover:border-brand-success"
+                  : "bg-bg-tertiary border-bg-border text-text-muted hover:border-brand-primary/40"
+              )}
+              aria-label={`Jump to question ${i + 1}${isAnswered ? " (answered)" : ""}`}
+              aria-current={isCurrent ? "step" : undefined}
+            >
+              {i + 1}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

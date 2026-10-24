@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Calculator, Award, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Calculator, Award, RotateCcw, TrendingUp } from "lucide-react";
 import {
   GRADE_OPTIONS,
   GRADE_POINTS,
@@ -34,6 +34,22 @@ function defaultEntries(): CourseEntry[] {
   ];
 }
 
+function nextClassInfo(cgpa: number): {
+  nextLabel: string;
+  pointsNeeded: number;
+  currentFloor: number;
+  nextFloor: number;
+} | null {
+  if (cgpa >= 4.5) return null;
+  if (cgpa >= 3.5)
+    return { nextLabel: "First Class", pointsNeeded: 4.5 - cgpa, currentFloor: 3.5, nextFloor: 4.5 };
+  if (cgpa >= 2.4)
+    return { nextLabel: "Second Class Upper", pointsNeeded: 3.5 - cgpa, currentFloor: 2.4, nextFloor: 3.5 };
+  if (cgpa >= 1.5)
+    return { nextLabel: "Second Class Lower", pointsNeeded: 2.4 - cgpa, currentFloor: 1.5, nextFloor: 2.4 };
+  return { nextLabel: "Third Class", pointsNeeded: 1.5 - cgpa, currentFloor: 0, nextFloor: 1.5 };
+}
+
 export default function CGPACalculatorPage() {
   const [courses, setCourses] = useState<CourseEntry[]>(() => loadStored());
   const [resetConfirm, setResetConfirm] = useState(false);
@@ -48,6 +64,7 @@ export default function CGPACalculatorPage() {
   );
 
   const classification = classifyDegree(cgpa);
+  const next = nextClassInfo(cgpa);
 
   const addCourse = () => {
     setCourses((prev) => [
@@ -70,9 +87,7 @@ export default function CGPACalculatorPage() {
     setCourses((prev) => prev.filter((c) => c.id !== id));
   };
 
-  const resetAll = () => {
-    setResetConfirm(true);
-  };
+  const resetAll = () => setResetConfirm(true);
 
   const confirmReset = () => {
     setResetConfirm(false);
@@ -86,9 +101,18 @@ export default function CGPACalculatorPage() {
     danger: "bg-brand-danger/10 text-brand-danger border-brand-danger/30",
   };
 
+  const progressPct = next
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          ((cgpa - next.currentFloor) / (next.nextFloor - next.currentFloor)) * 100
+        )
+      )
+    : 100;
+
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center gap-2">
@@ -105,7 +129,6 @@ export default function CGPACalculatorPage() {
         </Button>
       </div>
 
-      {/* Result hero */}
       <div className="rounded-2xl border border-bg-border bg-gradient-to-br from-brand-primary/10 via-bg-secondary to-bg-secondary p-6 sm:p-8 text-center">
         <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
           Cumulative GPA
@@ -119,6 +142,25 @@ export default function CGPACalculatorPage() {
           <Award size={16} />
           {classification.label}
         </div>
+
+        {next && (
+          <div className="mt-6 max-w-sm mx-auto">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-text-muted font-medium">{classification.label}</span>
+              <span className="text-text-muted font-medium">{next.nextLabel}</span>
+            </div>
+            <div className="h-2 rounded-full bg-bg-tertiary overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <p className="text-xs text-text-secondary mt-2 flex items-center justify-center gap-1">
+              <TrendingUp size={12} className="text-brand-primary" />
+              {next.pointsNeeded.toFixed(2)} points to {next.nextLabel}
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center justify-center gap-8 mt-6 pt-5 border-t border-bg-border">
           <div>
@@ -137,10 +179,17 @@ export default function CGPACalculatorPage() {
               {totalPoints}
             </div>
           </div>
+          <div>
+            <div className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+              Courses
+            </div>
+            <div className="text-lg font-bold text-text-primary mt-0.5">
+              {courses.length}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Course list */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-text-primary">Courses</h2>
@@ -149,77 +198,89 @@ export default function CGPACalculatorPage() {
           </span>
         </div>
 
-        {courses.map((course, index) => (
-          <div
-            key={course.id}
-            className="rounded-xl border border-bg-border bg-bg-secondary p-3 sm:p-4"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-7 h-7 rounded-full bg-bg-tertiary flex items-center justify-center text-xs font-bold text-text-muted shrink-0">
-                {index + 1}
-              </div>
-              <input
-                type="text"
-                value={course.code}
-                onChange={(e) =>
-                  updateCourse(course.id, "code", e.target.value.toUpperCase())
-                }
-                placeholder="Course code (e.g. MTH101)"
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary placeholder:text-text-muted text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
-              />
-              <button
-                onClick={() => removeCourse(course.id)}
-                disabled={courses.length === 1}
-                className="p-2 rounded-lg text-text-muted hover:text-brand-danger hover:bg-brand-danger/10 transition disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
-                aria-label="Remove course"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 pl-10">
-              <div className="flex-1">
-                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-                  Units
-                </label>
+        {courses.map((course, index) => {
+          const points = course.units * GRADE_POINTS[course.grade];
+          return (
+            <div
+              key={course.id}
+              className="rounded-xl border border-bg-border bg-bg-secondary p-3 sm:p-4"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-7 h-7 rounded-full bg-bg-tertiary flex items-center justify-center text-xs font-bold text-text-muted shrink-0">
+                  {index + 1}
+                </div>
                 <input
-                  type="number"
-                  min={1}
-                  max={12}
-                  inputMode="numeric"
-                  value={course.units}
+                  type="text"
+                  value={course.code}
                   onChange={(e) =>
-                    updateCourse(
-                      course.id,
-                      "units",
-                      Math.max(0, parseInt(e.target.value) || 0)
-                    )
+                    updateCourse(course.id, "code", e.target.value.toUpperCase())
                   }
-                  className="w-full px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
+                  placeholder="Course code (e.g. MTH101)"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary placeholder:text-text-muted text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
                 />
+                <button
+                  onClick={() => removeCourse(course.id)}
+                  disabled={courses.length === 1}
+                  className="p-2 rounded-lg text-text-muted hover:text-brand-danger hover:bg-brand-danger/10 transition disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                  aria-label="Remove course"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
 
-              <div className="flex-1">
-                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-                  Grade
-                </label>
-                <select
-                  value={course.grade}
-                  onChange={(e) =>
-                    updateCourse(course.id, "grade", e.target.value as Grade)
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
-                >
-                  {GRADE_OPTIONS.map((g) => (
-                    <option key={g} value={g}>
-                      {g} ({GRADE_POINTS[g]})
-                    </option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-2 pl-10">
+                <div className="flex-1">
+                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
+                    Units
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    inputMode="numeric"
+                    value={course.units}
+                    onChange={(e) =>
+                      updateCourse(
+                        course.id,
+                        "units",
+                        Math.max(0, parseInt(e.target.value) || 0)
+                      )
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
+                    Grade
+                  </label>
+                  <select
+                    value={course.grade}
+                    onChange={(e) =>
+                      updateCourse(course.id, "grade", e.target.value as Grade)
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
+                  >
+                    {GRADE_OPTIONS.map((g) => (
+                      <option key={g} value={g}>
+                        {g} ({GRADE_POINTS[g]})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="w-20">
+                  <div className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
+                    Points
+                  </div>
+                  <div className="px-3 py-2 rounded-lg bg-bg-tertiary text-text-primary text-sm font-bold text-center">
+                    {points}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         <Button variant="secondary" size="lg" fullWidth onClick={addCourse}>
           <Plus size={16} />

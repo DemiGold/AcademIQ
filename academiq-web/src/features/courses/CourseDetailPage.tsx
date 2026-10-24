@@ -29,6 +29,8 @@ export default function CourseDetailPage() {
 
   const [topicId, setTopicId] = useState<string>("");
   const [questionCount, setQuestionCount] = useState<number>(10);
+  const [timerMode, setTimerMode] = useState<"auto" | "custom">("auto");
+  const [customMinutes, setCustomMinutes] = useState<number>(10);
 
   const { data: questions, isLoading: loadingQuestions } = useQuestions(
     course?.id,
@@ -54,13 +56,17 @@ export default function CourseDetailPage() {
       ? availableCount
       : Math.min(questionCount, availableCount);
 
+  const autoMinutes = effectiveCount;
+  const durationMinutes =
+    timerMode === "auto" ? autoMinutes : Math.max(1, customMinutes);
+
   const handleStart = () => {
     if (!course || !questions || questions.length === 0) return;
 
     const shuffled = shuffle(questions);
     const selected = questionCount === 0 ? shuffled : shuffled.slice(0, questionCount);
 
-    const duration = Math.max(60, selected.length * 60);
+    const duration = Math.max(60, durationMinutes * 60);
 
     const topicName =
       topicId && topics.length > 0
@@ -156,7 +162,7 @@ export default function CourseDetailPage() {
             </div>
             <div className="text-lg font-bold text-text-primary mt-0.5 flex items-center gap-1">
               <Clock size={14} />
-              {Math.round((effectiveCount * 60) / 60)}m
+              {durationMinutes}m
             </div>
           </div>
         </div>
@@ -179,7 +185,6 @@ export default function CourseDetailPage() {
           Configure your session
         </h2>
 
-        {/* Topic filter - New Pill UI */}
         <div>
           <label className="block text-xs font-semibold text-text-secondary mb-2">
             Topic
@@ -252,6 +257,59 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
+        <div>
+          <label className="block text-xs font-semibold text-text-secondary mb-1.5">
+            Time limit
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setTimerMode("auto")}
+              className={`px-3 py-2.5 rounded-lg border text-sm font-semibold transition min-h-[44px] ${
+                timerMode === "auto"
+                  ? "border-brand-primary bg-brand-primary/10 text-brand-primary"
+                  : "border-bg-border bg-bg-secondary text-text-secondary hover:border-brand-primary/40"
+              }`}
+            >
+              Auto ({autoMinutes} min)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTimerMode("custom");
+                if (customMinutes < 1) setCustomMinutes(autoMinutes || 10);
+              }}
+              className={`px-3 py-2.5 rounded-lg border text-sm font-semibold transition min-h-[44px] ${
+                timerMode === "custom"
+                  ? "border-brand-primary bg-brand-primary/10 text-brand-primary"
+                  : "border-bg-border bg-bg-secondary text-text-secondary hover:border-brand-primary/40"
+              }`}
+            >
+              Custom
+            </button>
+          </div>
+          {timerMode === "custom" && (
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={180}
+                value={customMinutes}
+                onChange={(e) =>
+                  setCustomMinutes(
+                    Math.max(1, Math.min(180, parseInt(e.target.value) || 1))
+                  )
+                }
+                className="w-24 px-3 py-2 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
+              />
+              <span className="text-sm text-text-secondary">minutes</span>
+            </div>
+          )}
+          <p className="text-[11px] text-text-muted mt-1.5">
+            Recommended: 1 minute per question. Adjust as you like.
+          </p>
+        </div>
+
         <div className="rounded-lg bg-bg-tertiary p-3 text-xs text-text-secondary flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <FileText size={14} />
@@ -260,7 +318,7 @@ export default function CourseDetailPage() {
           </span>
           <span className="flex items-center gap-1.5">
             <Trophy size={14} />
-            ~{Math.round((effectiveCount * 60) / 60)} min
+            {durationMinutes} min
           </span>
         </div>
 
