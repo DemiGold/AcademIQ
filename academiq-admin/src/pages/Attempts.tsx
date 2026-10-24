@@ -420,11 +420,11 @@ function AnswerCard({ answer, index }: { answer: AttemptAnswer; index: number })
         })}
       </div>
 
-      {answer.explanation && (
+      {answer.explanation ? (
         <div className="mt-3 ml-9 p-3 bg-white border border-bg-border rounded-lg text-xs text-text-secondary leading-relaxed">
           <strong className="text-text-primary">Explanation:</strong> {answer.explanation}
         </div>
-      )}
+      ) : (<div className="mt-3 ml-9 p-3 bg-bg-tertiary rounded-lg text-xs text-text-muted italic text-center">No explanation provided.</div>)}
     </div>
   );
 }

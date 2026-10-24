@@ -106,7 +106,7 @@ export default function ReviewCard({ question, index, selectedIndex }: Props) {
       </div>
 
       {/* Explanation */}
-      {question.explanation && (
+      {question.explanation ? (
         <div className="rounded-lg bg-brand-warning/5 border border-brand-warning/20 p-3">
           <div className="flex items-start gap-2">
             <span className="text-base leading-none">💡</span>
@@ -116,7 +116,7 @@ export default function ReviewCard({ question, index, selectedIndex }: Props) {
             </div>
           </div>
         </div>
-      )}
+      ) : (<div className="rounded-lg bg-bg-tertiary p-3 text-xs sm:text-sm text-text-muted italic text-center">No explanation provided for this question.</div>)}
     </div>
   );
 }
