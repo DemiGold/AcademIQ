@@ -65,4 +65,5 @@ AcademIQ-backup-*
 combined_codebase.txt
 academiq-full-codebase.txt
 extract-all.sh
-extract-code.sh
+extract-code.sh.env
+.env.local

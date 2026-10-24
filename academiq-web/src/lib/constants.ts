@@ -20,11 +20,13 @@ export const DEPARTMENTS: Record<FacultyName, string[]> = {
   ],
   "Management Sciences": [
     "Accounting",
+    "Actuarial Science",
     "Business Administration",
+    "ERHRM",
     "Finance",
     "Insurance",
-    "Actuarial Science",
-    "Industrial Relations",
+    "Taxation",
+    "Procurement",
   ],
   Engineering: [
     "Mechanical Engineering",
@@ -36,7 +38,13 @@ export const DEPARTMENTS: Record<FacultyName, string[]> = {
   ],
 };
 
-export const ACADEMIC_YEARS = ["Year 1"] as const;
+export const ACADEMIC_YEARS = [
+  "Year 1",
+  "Year 2",
+  "Year 3",
+  "Year 4",
+  "Year 5",
+] as const;
 
 // Contact
 export const WHATSAPP_NUMBER = "2347078652616";
