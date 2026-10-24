@@ -106,7 +106,14 @@ export default function App() {
 
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/calculator" element={<CGPACalculatorPage />} />
+            <Route
+              path="/calculator"
+              element={
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+                  <CGPACalculatorPage />
+                </div>
+              }
+            />
 
             {/* Catch-all 404 inside the public chrome */}
             <Route path="*" element={<NotFoundPage />} />
