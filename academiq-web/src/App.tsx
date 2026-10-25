@@ -19,6 +19,7 @@ import CGPACalculatorPage from "./features/cgpa/CGPACalculatorPage";
 import ProfilePage from "./features/profile/ProfilePage";
 import LandingPage from "./features/landing/LandingPage";
 import NotFoundPage from "./features/not-found/NotFoundPage";
+import StudyPage from "./features/courses/StudyPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +125,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/courses" element={<CoursesListPage />} />
             <Route path="/courses/:code" element={<CourseDetailPage />} />
+            <Route path="/courses/:code/study" element={<StudyPage />} />
             <Route path="/cgpa" element={<CGPACalculatorPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

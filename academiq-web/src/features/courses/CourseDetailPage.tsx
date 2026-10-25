@@ -168,6 +168,26 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
+      {/* Study Mode Banner */}
+      <div className="rounded-xl border border-brand-primary/30 bg-gradient-to-r from-brand-primary/10 to-transparent p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-brand-primary/20 flex items-center justify-center shrink-0">
+            <BookOpen size={20} className="text-brand-primary" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-text-primary">Study Mode Available</h3>
+            <p className="text-xs text-text-secondary mt-0.5 max-w-sm">
+              Read chapter summaries and take quizzes focused on specific topics.
+            </p>
+          </div>
+        </div>
+        <Link to={`/courses/${course.code}/study`} className="w-full sm:w-auto shrink-0">
+          <Button size="md" className="w-full sm:w-auto">
+            Enter Study Mode
+          </Button>
+        </Link>
+      </div>
+
       {!premium && course.total_questions > availableCount && (
         <div className="rounded-xl border border-brand-warning/30 bg-brand-warning/5 p-4 flex items-start gap-3">
           <Lock size={18} className="text-brand-warning shrink-0 mt-0.5" />

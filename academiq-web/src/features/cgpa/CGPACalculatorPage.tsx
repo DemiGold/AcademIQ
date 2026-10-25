@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Calculator, Award, RotateCcw, TrendingUp } from "lucide-react";
+import { Plus, Trash2, Calculator, Award, RotateCcw, TrendingUp, BookOpen } from "lucide-react";
 import {
   GRADE_OPTIONS,
   GRADE_POINTS,
@@ -12,26 +12,19 @@ import {
 import Button from "../../components/ui/Button";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
-const STORAGE_KEY = "academiq-cgpa-v1";
+// Bumping this to v2 forces the browser to clear out the old dummy defaults
+const STORAGE_KEY = "academiq-cgpa-v2";
 
 function loadStored(): CourseEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultEntries();
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    if (Array.isArray(parsed)) return parsed;
   } catch {
     // ignore
   }
-  return defaultEntries();
-}
-
-function defaultEntries(): CourseEntry[] {
-  return [
-    { id: generateId(), code: "", units: 3, grade: "A" },
-    { id: generateId(), code: "", units: 2, grade: "B" },
-    { id: generateId(), code: "", units: 3, grade: "C" },
-  ];
+  return [];
 }
 
 function nextClassInfo(cgpa: number): {
@@ -91,7 +84,7 @@ export default function CGPACalculatorPage() {
 
   const confirmReset = () => {
     setResetConfirm(false);
-    setCourses(defaultEntries());
+    setCourses([]); // Clear all courses
   };
 
   const toneStyles: Record<string, string> = {
@@ -123,10 +116,12 @@ export default function CGPACalculatorPage() {
             Enter your courses, units, and grades. 5-point scale.
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={resetAll}>
-          <RotateCcw size={14} />
-          Reset
-        </Button>
+        {courses.length > 0 && (
+          <Button variant="ghost" size="sm" onClick={resetAll}>
+            <RotateCcw size={14} />
+            Reset
+          </Button>
+        )}
       </div>
 
       <div className="rounded-2xl border border-bg-border bg-gradient-to-br from-brand-primary/10 via-bg-secondary to-bg-secondary p-6 sm:p-8 text-center">
@@ -143,7 +138,7 @@ export default function CGPACalculatorPage() {
           {classification.label}
         </div>
 
-        {next && (
+        {next && courses.length > 0 && (
           <div className="mt-6 max-w-sm mx-auto">
             <div className="flex items-center justify-between text-xs mb-1.5">
               <span className="text-text-muted font-medium">{classification.label}</span>
@@ -191,13 +186,35 @@ export default function CGPACalculatorPage() {
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-text-primary">Courses</h2>
-          <span className="text-xs text-text-muted">
-            {courses.length} {courses.length === 1 ? "course" : "courses"}
-          </span>
-        </div>
+        {courses.length > 0 && (
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-text-primary">Courses</h2>
+            <span className="text-xs text-text-muted">
+              {courses.length} {courses.length === 1 ? "course" : "courses"}
+            </span>
+          </div>
+        )}
 
+        {/* Empty State */}
+        {courses.length === 0 && (
+          <div className="rounded-xl border border-dashed border-bg-border bg-bg-secondary p-8 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-bg-tertiary flex items-center justify-center mx-auto mb-3">
+              <BookOpen size={24} className="text-text-muted" />
+            </div>
+            <h3 className="text-sm font-semibold text-text-primary mb-1">
+              Your course list is empty
+            </h3>
+            <p className="text-xs text-text-secondary max-w-xs mx-auto mb-4">
+              Add your courses one by one to calculate your CGPA.
+            </p>
+            <Button size="md" onClick={addCourse} className="mx-auto">
+              <Plus size={16} />
+              Add your first course
+            </Button>
+          </div>
+        )}
+
+        {/* Course List */}
         {courses.map((course, index) => {
           const points = course.units * GRADE_POINTS[course.grade];
           return (
@@ -220,8 +237,7 @@ export default function CGPACalculatorPage() {
                 />
                 <button
                   onClick={() => removeCourse(course.id)}
-                  disabled={courses.length === 1}
-                  className="p-2 rounded-lg text-text-muted hover:text-brand-danger hover:bg-brand-danger/10 transition disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                  className="p-2 rounded-lg text-text-muted hover:text-brand-danger hover:bg-brand-danger/10 transition shrink-0"
                   aria-label="Remove course"
                 >
                   <Trash2 size={16} />
@@ -235,7 +251,7 @@ export default function CGPACalculatorPage() {
                   </label>
                   <input
                     type="number"
-                    min={1}
+                    min={0}
                     max={12}
                     inputMode="numeric"
                     value={course.units}
@@ -282,15 +298,19 @@ export default function CGPACalculatorPage() {
           );
         })}
 
-        <Button variant="secondary" size="lg" fullWidth onClick={addCourse}>
-          <Plus size={16} />
-          Add course
-        </Button>
+        {courses.length > 0 && (
+          <Button variant="secondary" size="lg" fullWidth onClick={addCourse}>
+            <Plus size={16} />
+            Add another course
+          </Button>
+        )}
       </div>
 
-      <p className="text-xs text-text-muted text-center">
-        Saved automatically to this browser. Nothing sent to the server.
-      </p>
+      {courses.length > 0 && (
+        <p className="text-xs text-text-muted text-center">
+          Saved automatically to this browser. Nothing sent to the server.
+        </p>
+      )}
 
       <ConfirmDialog
         open={resetConfirm}

@@ -103,6 +103,7 @@ export interface TopicOption {
   id: string;
   name: string;
   course_id: string;
+  summary: string | null;
 }
 
 export interface QuestionRow {
@@ -148,7 +149,7 @@ export async function fetchCourses(): Promise<CourseOption[]> {
 export async function fetchTopics(courseId: string): Promise<TopicOption[]> {
   const { data, error } = await supabase
     .from("topics")
-    .select("id, name, course_id")
+    .select("id, name, course_id, summary")
     .eq("course_id", courseId)
     .order("name");
   if (error) throw new Error(error.message);
@@ -498,4 +499,12 @@ export async function fetchAttemptDetail(attemptId: string): Promise<AttemptDeta
   });
   if (error) throw new Error(error.message);
   return data as AttemptDetail;
+}
+
+export async function updateTopicSummary(id: string, summary: string | null): Promise<void> {
+  const { error } = await supabase
+    .from("topics")
+    .update({ summary })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
 }
