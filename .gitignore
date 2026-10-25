@@ -67,3 +67,4 @@ academiq-full-codebase.txt
 extract-all.sh
 extract-code.sh.env
 .env.local
+supabase/
