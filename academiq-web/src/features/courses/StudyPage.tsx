@@ -1,18 +1,22 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, Loader2, Play, ChevronRight } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2, Play, ChevronRight, Crown } from "lucide-react";
 import { useCourses } from "../../hooks/useCourses";
 import { useQuestions } from "../../hooks/useQuestions";
 import { fetchTopics } from "../../services/topicService";
 import { useQuizStore } from "../../stores/quizStore";
-import { shuffle } from "../../lib/utils";
+import { useAuthStore } from "../../stores/authStore";
+import { isPremium, shuffle } from "../../lib/utils";
 import Button from "../../components/ui/Button";
 
 export default function StudyPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const startQuiz = useQuizStore((s) => s.startQuiz);
+  
+  const profile = useAuthStore((s) => s.profile);
+  const premium = isPremium(profile);
 
   const { data: courses, isLoading: loadingCourses } = useCourses();
   const course = useMemo(() => courses?.find((c) => c.code === code), [courses, code]);
@@ -79,6 +83,26 @@ export default function StudyPage() {
       <div className="text-center py-12">
         <h2 className="text-lg font-bold text-text-primary mb-2">Course not found</h2>
         <Link to="/courses"><Button variant="secondary">Back to Courses</Button></Link>
+      </div>
+    );
+  }
+
+  // PREMIUM GATE
+  if (!premium) {
+    return (
+      <div className="max-w-md mx-auto text-center py-16 px-4">
+        <div className="w-16 h-16 rounded-full bg-brand-warning/10 flex items-center justify-center mx-auto mb-5">
+          <Crown size={28} className="text-brand-warning" />
+        </div>
+        <h2 className="text-2xl font-bold text-text-primary mb-3">Premium Feature</h2>
+        <p className="text-sm text-text-secondary mb-6 leading-relaxed">
+          Study Mode (chapter summaries and targeted quizzes) is exclusive to premium students. Unlock all questions and study notes by redeeming a token on your dashboard.
+        </p>
+        <Link to="/dashboard">
+          <Button size="lg" fullWidth>
+            Go to Dashboard
+          </Button>
+        </Link>
       </div>
     );
   }
