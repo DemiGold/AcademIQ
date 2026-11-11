@@ -102,42 +102,7 @@ input[type="number"] {
 }
 
 /* ============================================================
-<<<<<<< HEAD
-   Mobile tuning for notes
-   ============================================================ */
-@media (max-width: 640px) {
-  .prose {
-    /* 17px body text is comfortable, but we scale headers down to match */
-    font-size: 1.0625rem;   
-    line-height: 1.75;
-  }
-  
-  .prose :where(h1):not(:where([class~="not-prose"] *)) {
-    font-size: 1.35em;     /* Much smaller than the default 2.25em */
-    margin-top: 1.25em;
-    margin-bottom: 0.5em;
-  }
-  
-  .prose :where(h2):not(:where([class~="not-prose"] *)) {
-    font-size: 1.2em;      /* Smaller than default 1.5em */
-    margin-top: 1.25em;
-    margin-bottom: 0.5em;
-  }
-  
-  .prose :where(h3):not(:where([class~="not-prose"] *)) {
-    font-size: 1.1em;      /* Slightly smaller than default 1.25em */
-    margin-top: 1em;
-    margin-bottom: 0.4em;
-  }
-  
-  .prose :where(ul, ol):not(:where([class~="not-prose"] *)) {
-    padding-inline-start: 1.15em;
-  }
-=======
    Markdown notes (prose)
-   Maps Tailwind Typography's CSS variables to our theme tokens,
-   so markdown automatically adapts to light/dark without us
-   writing a single dark: variant.
    ============================================================ */
 .prose {
   --tw-prose-body: var(--text-secondary);
@@ -164,7 +129,7 @@ input[type="number"] {
   word-break: break-word;
 }
 
-/* Inline code — softer than prose's default, matches app chrome */
+/* Inline code */
 .prose :where(code):not(:where(pre code)):not(:where([class~="not-prose"] *)) {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
@@ -178,14 +143,14 @@ input[type="number"] {
   content: "";
 }
 
-/* Block code — horizontal scroll on phones instead of wrapping */
+/* Block code */
 .prose :where(pre):not(:where([class~="not-prose"] *)) {
   overflow-x: auto;
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
 }
 
-/* Tables — scroll horizontally on phones */
+/* Tables */
 .prose :where(table):not(:where([class~="not-prose"] *)) {
   display: block;
   overflow-x: auto;
@@ -198,7 +163,7 @@ input[type="number"] {
   }
 }
 
-/* Images — never exceed container, subtle rounding */
+/* Images */
 .prose :where(img):not(:where([class~="not-prose"] *)) {
   max-width: 100%;
   height: auto;
@@ -207,25 +172,32 @@ input[type="number"] {
 
 /* ============================================================
    Mobile tuning for notes
-   Phones = <= 640px. We bump body size slightly and tighten
-   list indentation so lists don't eat 30% of a 360px screen.
    ============================================================ */
 @media (max-width: 640px) {
   .prose {
-    font-size: 1.0625rem;   /* ~17px — easier on the eyes than 16px */
+    font-size: 1.0625rem;
     line-height: 1.75;
   }
+  
+  .prose :where(h1):not(:where([class~="not-prose"] *)) {
+    font-size: 1.35em;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+  }
+  
+  .prose :where(h2):not(:where([class~="not-prose"] *)) {
+    font-size: 1.2em;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+  }
+  
+  .prose :where(h3):not(:where([class~="not-prose"] *)) {
+    font-size: 1.1em;
+    margin-top: 1em;
+    margin-bottom: 0.4em;
+  }
+  
   .prose :where(ul, ol):not(:where([class~="not-prose"] *)) {
     padding-inline-start: 1.15em;
   }
-  .prose :where(h1):not(:where([class~="not-prose"] *)) {
-    font-size: 1.5em;
-  }
-  .prose :where(h2):not(:where([class~="not-prose"] *)) {
-    font-size: 1.25em;
-  }
-  .prose :where(h3):not(:where([class~="not-prose"] *)) {
-    font-size: 1.1em;
-  }
->>>>>>> 9a82b8d9c467d7d940ce10b005815c5f2dc8fc90
 }
