@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuthStore } from "./stores/authStore";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
 import PublicLayout from "./components/layout/PublicLayout";
 import StudentLayout from "./components/layout/StudentLayout";
 import {
@@ -81,74 +82,76 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<LandingPage />} />
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<LandingPage />} />
 
+              <Route
+                path="/login"
+                element={
+                  <PublicOnlyRoute>
+                    <LoginPage />
+                  </PublicOnlyRoute>
+                }
+              />
+
+              <Route
+                path="/register"
+                element={
+                  <PublicOnlyRoute>
+                    <RegisterPage />
+                  </PublicOnlyRoute>
+                }
+              />
+
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route
+                path="/calculator"
+                element={
+                  <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+                    <CGPACalculatorPage />
+                  </div>
+                }
+              />
+
+              {/* Catch-all 404 inside the public chrome */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+
+            {/* Student routes - auth required, tab bar */}
+            <Route element={<StudentLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/courses" element={<CoursesListPage />} />
+              <Route path="/courses/:code" element={<CourseDetailPage />} />
+              <Route path="/courses/:code/study" element={<StudyPage />} />
+              <Route path="/cgpa" element={<CGPACalculatorPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+
+            {/* Quiz routes - auth required, FULL-SCREEN (no tab bar) */}
             <Route
-              path="/login"
+              path="/quiz/:code"
               element={
-                <PublicOnlyRoute>
-                  <LoginPage />
-                </PublicOnlyRoute>
+                <ProtectedRoute>
+                  <QuizPage />
+                </ProtectedRoute>
               }
             />
-
             <Route
-              path="/register"
+              path="/quiz/:code/result"
               element={
-                <PublicOnlyRoute>
-                  <RegisterPage />
-                </PublicOnlyRoute>
+                <ProtectedRoute>
+                  <ResultPage />
+                </ProtectedRoute>
               }
             />
-
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route
-              path="/calculator"
-              element={
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-                  <CGPACalculatorPage />
-                </div>
-              }
-            />
-
-            {/* Catch-all 404 inside the public chrome */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-
-          {/* Student routes - auth required, tab bar */}
-          <Route element={<StudentLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/courses" element={<CoursesListPage />} />
-            <Route path="/courses/:code" element={<CourseDetailPage />} />
-            <Route path="/courses/:code/study" element={<StudyPage />} />
-            <Route path="/cgpa" element={<CGPACalculatorPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
-
-          {/* Quiz routes - auth required, FULL-SCREEN (no tab bar) */}
-          <Route
-            path="/quiz/:code"
-            element={
-              <ProtectedRoute>
-                <QuizPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quiz/:code/result"
-            element={
-              <ProtectedRoute>
-                <ResultPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

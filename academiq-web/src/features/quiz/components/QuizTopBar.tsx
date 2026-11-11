@@ -31,7 +31,7 @@ export default function QuizTopBar({
           className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-text-secondary hover:text-brand-danger hover:bg-brand-danger/10 transition"
         >
           <X size={16} />
-          <span className="hidden xs:inline">Exit</span>
+          <span className="inline">Exit</span>
         </button>
 
         {/* Timer */}
