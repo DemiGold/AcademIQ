@@ -21,3 +21,72 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
+
+/* ============================================================
+   Markdown preview (admin)
+   Maps Tailwind Typography's variables to the admin light palette
+   so the preview matches what students see on the web app.
+   ============================================================ */
+.prose {
+  --tw-prose-body: var(--text-secondary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-lead: var(--text-secondary);
+  --tw-prose-links: var(--brand-primary);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--brand-primary);
+  --tw-prose-bullets: var(--brand-primary);
+  --tw-prose-hr: #D8E0E8;
+  --tw-prose-quotes: var(--text-secondary);
+  --tw-prose-quote-borders: var(--brand-primary);
+  --tw-prose-captions: #95A5A6;
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-pre-code: var(--text-primary);
+  --tw-prose-pre-bg: #EAF0F6;
+  --tw-prose-th-borders: #D8E0E8;
+  --tw-prose-td-borders: #D8E0E8;
+}
+
+/* Long URLs / unbroken tokens wrap instead of overflowing */
+.prose :where(p, li, td):not(:where([class~="not-prose"] *)) {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Inline code — subtle chip instead of red default */
+.prose :where(code):not(:where(pre code)):not(:where([class~="not-prose"] *)) {
+  background-color: #EAF0F6;
+  color: var(--text-primary);
+  padding: 0.15em 0.4em;
+  border-radius: 0.375rem;
+  font-size: 0.875em;
+  font-weight: 600;
+}
+.prose :where(code):not(:where(pre code))::before,
+.prose :where(code):not(:where(pre code))::after {
+  content: "";
+}
+
+.prose :where(pre):not(:where([class~="not-prose"] *)) {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+/* Tables scroll horizontally on narrow admin viewports */
+.prose :where(table):not(:where([class~="not-prose"] *)) {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+@media (min-width: 768px) {
+  .prose :where(table):not(:where([class~="not-prose"] *)) {
+    display: table;
+    white-space: normal;
+  }
+}
+
+.prose :where(img):not(:where([class~="not-prose"] *)) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
