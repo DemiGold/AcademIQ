@@ -22,6 +22,13 @@ export default function MarkdownPreview({
     );
   }
 
+  // Convert standard LaTeX delimiters to Markdown Math delimiters
+  const formattedContent = content
+    .replace(/\\\[/g, "$$$$")
+    .replace(/\\\]/g, "$$$$")
+    .replace(/\\\(/g, "$")
+    .replace(/\\\)/g, "$");
+
   return (
     <div className="prose max-w-none">
       <ReactMarkdown
@@ -33,7 +40,7 @@ export default function MarkdownPreview({
           ),
         }}
       >
-        {content}
+        {formattedContent}
       </ReactMarkdown>
     </div>
   );
