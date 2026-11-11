@@ -1,4 +1,3 @@
-
 # 🎓 AcademIQ
 
 ### CBT-style exam practice for UNILAG students
@@ -20,7 +19,7 @@
 
 AcademIQ lets university students practice past-question-style exams in a timed, CBT-like environment, get instant scores with explanations, and track how they are doing. Free users get a sample of questions in every course; premium users unlock everything with a token bought over WhatsApp.
 
-Students can also enter **Study Mode**, where they read chapter summaries before taking a quiz specifically targeted at that chapter. 
+Students can also enter **Study Mode**, where they read chapter summaries (with full Markdown and LaTeX math rendering) before taking a quiz specifically targeted at that chapter. 
 
 Admins manage the whole question bank, write chapter summaries, generate and track premium tokens, and watch usage analytics from a separate panel.
 
@@ -60,29 +59,29 @@ This repository is a single repo with two independent projects that share one Su
 
 The public app where students sign up, practice and track results. It is fully installable as a Progressive Web App (PWA) on iOS and Android.
 
-**Stack:** Vite · React 19 · TypeScript · React Router 7 · TanStack Query · Zustand · Tailwind CSS · React Hook Form · Zod · Supabase
+**Stack:** Vite · React 19 · TypeScript · React Router 7 · TanStack Query · Zustand · Tailwind CSS · React Hook Form · Zod · Supabase · React Markdown · KaTeX
 
 **Features**
 - **Authentication:** email and password, with a 3-step signup and password reset by email
 - **One-time ID upgrade:** students who register with a JAMB number can update to their Matric number once
-- **Study Mode:** read chapter summaries and immediately take a quiz targeted at that specific chapter
+- **Study Mode:** read chapter summaries (featuring full Markdown and KaTeX math support) and immediately take a quiz targeted at that specific chapter
 - **Faculty-aware courses:** students see the courses targeted at their faculty
 - **CBT simulation:** timed exams, question navigation, quick-nav pill bar, custom timer settings, and auto-submit
 - **Results and review:** score, grade, time taken, breakdown bar, and a per-question review with explanations
 - **Free sample and premium:** free users get the questions flagged as free; redeeming a token unlocks everything for 30 days
 - **Public CGPA calculator:** free, 5-point scale, works without logging in, and saved in the browser
-- **Dark mode & PWA support**
+- **Dark mode & PWA support** (math equations automatically adapt to dark mode)
 
 ### 🛠️ academiq-admin — Super Admin Panel
 
 The control center. Desktop-first, light theme.
 
-**Stack:** Vite · React 19 · TypeScript · React Router 7 · TanStack Query · Recharts · Papa Parse · Tailwind CSS · Supabase
+**Stack:** Vite · React 19 · TypeScript · React Router 7 · TanStack Query · Recharts · Papa Parse · Tailwind CSS · Supabase · React Markdown · KaTeX
 
 **Features**
 - **Overview:** student, premium and token counts, revenue from redeemed tokens, a 30-day signups chart and a premium/free split
 - **Courses and topics:** create, edit, hide and delete, with faculty targeting and live question counts
-- **Study Mode Notes:** write and save chapter summaries (notes) for any topic
+- **Study Mode Notes:** write and save chapter summaries with a live split-pane preview supporting Markdown, tables, and LaTeX equations
 - **Question bank:** paginated browser, edit modal, free/paid flag and draft/published status
 - **Bulk CSV upload:** row-level validation, duplicate detection and batched inserts (200 rows per batch)
 - **Token engine:** generate batches of 1 to 100 tokens, see which are redeemed, copy or export as CSV
@@ -192,6 +191,8 @@ Components use semantic tokens (`text-primary`, `bg-border`, and so on), so pale
 - [ ] Redeem a token and confirm all questions unlock without a manual reload
 - [ ] Complete a quiz and confirm the score matches the admin attempts view
 - [ ] Enter Study Mode, read notes, and take a chapter-specific quiz
+- [ ] **Admin: Write a chapter summary with LaTeX math and confirm it previews correctly.**
+- [ ] **Student: Open Study Mode and confirm math renders correctly in both light and dark modes.**
 - [ ] Refresh any authenticated page: no 404 and no logout
 - [ ] As a student, open `/overview` on the admin site and confirm it is refused
 - [ ] Admin: bulk-upload 50 CSV rows and confirm the question count updates
@@ -210,6 +211,7 @@ Components use semantic tokens (`text-primary`, `bg-border`, and so on), so pale
 - [x] Dark mode & PWA support
 - [x] Persist quiz progress across refreshes
 - [x] Study Mode (Chapter summaries + targeted quizzes)
+- [x] **KaTeX math & Markdown rendering for Study Mode notes**
 - [ ] Offline quiz mode (Service Workers)
 - [ ] Push notifications for new courses
 - [ ] Leaderboards
