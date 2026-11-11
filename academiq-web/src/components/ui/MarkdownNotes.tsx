@@ -1,12 +1,12 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import remarkMath from "remark-math"; // 1. Import remark-math
+import rehypeKatex from "rehype-katex"; // 2. Import rehype-katex
 import { classNames } from "../../lib/utils";
 
 interface MarkdownNotesProps {
-  /** Raw markdown string. Plain text with line breaks also works. */
   content: string;
-  /** Extra classes appended after the default prose classes. */
   className?: string;
 }
 
@@ -17,11 +17,9 @@ export default function MarkdownNotes({
   return (
     <div className={classNames("prose max-w-none", className)}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks]}
+        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]} // 3. Add remarkMath
+        rehypePlugins={[rehypeKatex]} // 4. Add rehypeKatex
         components={{
-          // External links open in a new tab. Internal anchors (rare in notes)
-          // get the same treatment for simplicity — revisit if we ever ship
-          // in-app links.
           a: ({ node: _node, ...props }) => (
             <a {...props} target="_blank" rel="noopener noreferrer" />
           ),

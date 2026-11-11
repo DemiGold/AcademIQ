@@ -201,3 +201,17 @@ input[type="number"] {
     padding-inline-start: 1.15em;
   }
 }
+
+/* ============================================================
+   KaTeX Math Rendering Fixes
+   ============================================================ */
+.prose .katex {
+  color: inherit; /* Inherits the current text color so it works in dark mode */
+}
+
+.prose .katex-display {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem;
+}
