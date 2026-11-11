@@ -9,12 +9,13 @@ import { useQuizStore } from "../../stores/quizStore";
 import { useAuthStore } from "../../stores/authStore";
 import { isPremium, shuffle } from "../../lib/utils";
 import Button from "../../components/ui/Button";
+import MarkdownNotes from "../../components/ui/MarkdownNotes";
 
 export default function StudyPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const startQuiz = useQuizStore((s) => s.startQuiz);
-  
+
   const profile = useAuthStore((s) => s.profile);
   const premium = isPremium(profile);
 
@@ -52,7 +53,7 @@ export default function StudyPage() {
     // Default to 10 questions, or all available if less than 10
     const count = Math.min(10, questions.length);
     const selected = shuffle(questions).slice(0, count);
-    
+
     // 1 min per question
     const duration = Math.max(60, selected.length * 60);
 
@@ -109,7 +110,10 @@ export default function StudyPage() {
 
   return (
     <div className="space-y-5">
-      <Link to={`/courses/${course.code}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition">
+      <Link
+        to={`/courses/${course.code}`}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition"
+      >
         <ArrowLeft size={16} /> Back to {course.code}
       </Link>
 
@@ -127,9 +131,29 @@ export default function StudyPage() {
         </div>
       </div>
 
+      {/* Mobile-only sticky chapter switcher.
+          Bleeds to the container edges so it reads as a bar under the header. */}
+      <div className="md:hidden sticky top-14 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-bg-primary/95 backdrop-blur-md border-b border-bg-border">
+        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
+          Chapter
+        </label>
+        <select
+          value={selectedTopicId}
+          onChange={(e) => setSelectedTopicId(e.target.value)}
+          className="w-full px-3 py-2.5 rounded-lg border border-bg-border bg-bg-secondary text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:border-brand-primary focus:ring-brand-primary/20"
+        >
+          {topics?.map((t, i) => (
+            <option key={t.id} value={t.id}>
+              {i + 1}. {t.name}
+              {!t.summary ? " (no notes)" : ""}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* LEFT: Sidebar with Topics */}
-        <div className="md:col-span-1 space-y-2">
+        {/* LEFT: Sidebar with Topics — desktop only */}
+        <div className="hidden md:block md:col-span-1 space-y-2">
           <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">
             Chapters
           </h2>
@@ -147,7 +171,11 @@ export default function StudyPage() {
                 }`}
               >
                 <div className="flex items-center gap-3 truncate">
-                  <span className={`text-xs font-bold ${isActive ? "text-white/60" : "text-text-muted"}`}>
+                  <span
+                    className={`text-xs font-bold ${
+                      isActive ? "text-white/60" : "text-text-muted"
+                    }`}
+                  >
                     {index + 1}.
                   </span>
                   <span className="text-sm font-semibold truncate">{t.name}</span>
@@ -164,14 +192,14 @@ export default function StudyPage() {
         {/* RIGHT: Summary Content */}
         <div className="md:col-span-2">
           {selectedTopic ? (
-            <div className="bg-bg-secondary rounded-2xl border border-bg-border p-6 sm:p-8 space-y-6">
+            <div className="bg-bg-secondary rounded-2xl border border-bg-border p-5 sm:p-8 space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-text-primary mb-4">{selectedTopic.name}</h2>
-                
+                <h2 className="text-xl font-bold text-text-primary mb-4">
+                  {selectedTopic.name}
+                </h2>
+
                 {selectedTopic.summary ? (
-                  <div className="prose prose-sm sm:prose-base max-w-none text-text-secondary leading-relaxed whitespace-pre-wrap">
-                    {selectedTopic.summary}
-                  </div>
+                  <MarkdownNotes content={selectedTopic.summary} />
                 ) : (
                   <div className="bg-bg-tertiary rounded-xl p-6 text-center border border-bg-border border-dashed">
                     <p className="text-sm text-text-muted">
@@ -183,7 +211,8 @@ export default function StudyPage() {
 
               <div className="pt-6 border-t border-bg-border flex flex-col items-center">
                 <p className="text-sm text-text-secondary mb-4 text-center">
-                  Ready to test your understanding of <strong className="text-text-primary">{selectedTopic.name}</strong>?
+                  Ready to test your understanding of{" "}
+                  <strong className="text-text-primary">{selectedTopic.name}</strong>?
                 </p>
                 <Button
                   size="lg"
@@ -196,15 +225,17 @@ export default function StudyPage() {
                   ) : (
                     <Play size={18} />
                   )}
-                  {availableQuestions > 0 
-                    ? `Take Quiz (${Math.min(10, availableQuestions)} questions)` 
+                  {availableQuestions > 0
+                    ? `Take Quiz (${Math.min(10, availableQuestions)} questions)`
                     : "No questions available"}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="bg-bg-secondary rounded-2xl border border-bg-border p-8 text-center">
-              <p className="text-sm text-text-muted">Select a chapter from the left to begin studying.</p>
+              <p className="text-sm text-text-muted">
+                Select a chapter to begin studying.
+              </p>
             </div>
           )}
         </div>
