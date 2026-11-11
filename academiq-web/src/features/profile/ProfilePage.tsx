@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Mail,
   Phone,
@@ -32,6 +33,7 @@ function isJambReg(id: string | null | undefined): boolean {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const profile = useAuthStore((s) => s.profile);
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
@@ -81,6 +83,7 @@ export default function ProfilePage() {
     setLoggingOut(true);
     await signOut();
     useQuizStore.getState().reset();
+    queryClient.clear();
     navigate("/login", { replace: true });
   };
 
